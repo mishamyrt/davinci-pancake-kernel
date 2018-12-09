@@ -19,6 +19,8 @@
 #include <uapi/linux/sched/types.h>
 #endif
 
+unsigned long last_input_time;
+
 enum {
 	SCREEN_OFF,
 	INPUT_BOOST,
@@ -248,6 +250,8 @@ static void cpu_input_boost_input_event(struct input_handle *handle,
 	struct boost_drv *b = handle->handler->private;
 
 	__cpu_input_boost_kick(b);
+
+	last_input_time = jiffies;
 }
 
 static int cpu_input_boost_input_connect(struct input_handler *handler,
