@@ -43,6 +43,10 @@
 #include <linux/export.h>
 #include <linux/double_click.h>
 
+#ifdef CONFIG_EXPOSURE_ADJUSTMENT
+#include "exposure_adjustment.h"
+#endif
+
 #ifdef CONFIG_KLAPSE
 #include <linux/klapse.h>
 #endif
@@ -884,6 +888,10 @@ int dsi_panel_set_backlight(struct dsi_panel *panel, u32 bl_lvl)
 
 #ifdef CONFIG_KLAPSE
 	set_rgb_slider(bl_lvl);
+#endif
+
+#ifdef CONFIG_EXPOSURE_ADJUSTMENT
+	bl_lvl = ea_panel_calc_backlight(bl_lvl);
 #endif
 
 	pr_debug("backlight type:%d lvl:%d\n", bl->type, bl_lvl);
