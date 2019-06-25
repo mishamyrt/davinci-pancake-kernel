@@ -2076,7 +2076,7 @@ long _do_fork(unsigned long clone_flags,
 	int trace = 0;
 	long nr;
 
-	if (task_is_zygote(current))
+	if (task_is_zygote(current) || task_is_embryo(current))
 		devfreq_boost_kick_max(DEVFREQ_MSM_CPUBW, 400);
 
 	/*
