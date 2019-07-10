@@ -4891,16 +4891,69 @@ static ssize_t sysfs_dynamic_dsi_clk_write(struct device *dev,
 
 }
 
+static ssize_t sysfs_hbm_read(struct device *dev,
+	struct device_attribute *attr, char *buf)
+{
+	struct dsi_display *display;
+	struct dsi_panel *panel;
+	int rc = 0;
+
+	display = dev_get_drvdata(dev);
+	if (!display) {
+		pr_err("Invalid display\n");
+		return -EINVAL;
+	}
+
+	panel = display->panel;
+
+	mutex_lock(&panel->panel_lock);
+	rc = snprintf(buf, PAGE_SIZE, "%d\n", panel->hbm_mode);
+	mutex_unlock(&panel->panel_lock);
+
+	return rc;
+}
+
+static ssize_t sysfs_hbm_write(struct device *dev,
+	struct device_attribute *attr, const char *buf, size_t count)
+{
+	struct dsi_display *display;
+	struct dsi_panel *panel;
+	int hbm_mode;
+	int rc = 0;
+
+	display = dev_get_drvdata(dev);
+	if (!display) {
+		pr_err("Invalid display\n");
+		return -EINVAL;
+	}
+
+	rc = kstrtoint(buf, 10, &hbm_mode);
+	if (rc) {
+		pr_err("%s: kstrtoint failed. rc=%d\n", __func__, rc);
+		return rc;
+	}
+
+	panel = display->panel;
+
+	mutex_lock(&panel->panel_lock);
+	dsi_panel_set_hbm_backlight(panel, !!hbm_mode);
+	mutex_unlock(&panel->panel_lock);
+
+	return count;
+}
+
 static DEVICE_ATTR(dynamic_dsi_clock, 0644,
 			sysfs_dynamic_dsi_clk_read,
 			sysfs_dynamic_dsi_clk_write);
+static DEVICE_ATTR(hbm, 0644, sysfs_hbm_read, sysfs_hbm_write);
 
-static struct attribute *dynamic_dsi_clock_fs_attrs[] = {
+static struct attribute *dsi_sysfs_attrs[] = {
 	&dev_attr_dynamic_dsi_clock.attr,
+	&dev_attr_hbm.attr,
 	NULL,
 };
-static struct attribute_group dynamic_dsi_clock_fs_attrs_group = {
-	.attrs = dynamic_dsi_clock_fs_attrs,
+static struct attribute_group dsi_sysfs_attrs_group = {
+	.attrs = dsi_sysfs_attrs,
 };
 
 static int dsi_display_validate_split_link(struct dsi_display *display)
@@ -4945,8 +4998,7 @@ static int dsi_display_sysfs_init(struct dsi_display *display)
 	struct device *dev = &display->pdev->dev;
 
 	if (display->panel->panel_mode == DSI_OP_CMD_MODE)
-		rc = sysfs_create_group(&dev->kobj,
-			&dynamic_dsi_clock_fs_attrs_group);
+		rc = sysfs_create_group(&dev->kobj, &dsi_sysfs_attrs_group);
 
 	return rc;
 
@@ -4957,8 +5009,7 @@ static int dsi_display_sysfs_deinit(struct dsi_display *display)
 	struct device *dev = &display->pdev->dev;
 
 	if (display->panel->panel_mode == DSI_OP_CMD_MODE)
-		sysfs_remove_group(&dev->kobj,
-			&dynamic_dsi_clock_fs_attrs_group);
+		sysfs_remove_group(&dev->kobj, &dsi_sysfs_attrs_group);
 
 	return 0;
 
