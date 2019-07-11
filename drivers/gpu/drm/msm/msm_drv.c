@@ -61,6 +61,7 @@
 #define MSM_VERSION_MINOR	2
 #define MSM_VERSION_PATCHLEVEL	0
 
+static struct kmem_cache *kmem_vblank_work_pool;
 atomic_t resume_pending;
 wait_queue_head_t resume_wait_q;
 
