@@ -646,6 +646,7 @@ int cam_sensor_match_id(struct cam_sensor_ctrl_t *s_ctrl)
 	return rc;
 }
 
+static uint32_t g_operation_mode;// XIAOMI: libin16 add for face unlock
 int32_t cam_sensor_driver_cmd(struct cam_sensor_ctrl_t *s_ctrl,
 	void *arg)
 {
@@ -772,6 +773,11 @@ int32_t cam_sensor_driver_cmd(struct cam_sensor_ctrl_t *s_ctrl,
 			CAM_ERR(CAM_SENSOR, "Failed Copying from user");
 			goto release_mutex;
 		}
+
+		// XIAOMI: libin16 add for face unlock --start
+		g_operation_mode = sensor_acq_dev.operation_mode;
+		CAM_DBG(CAM_SENSOR, "operation mode :%d", g_operation_mode);
+		// XIAOMI: libin16 add for face unlock --end
 
 		bridge_params.session_hdl = sensor_acq_dev.session_handle;
 		bridge_params.ops = &s_ctrl->bridge_intf.ops;
@@ -1029,11 +1035,16 @@ int cam_sensor_publish_dev_info(struct cam_req_mgr_device_info *info)
 
 	info->dev_id = CAM_REQ_MGR_DEVICE_SENSOR;
 	strlcpy(info->name, CAM_SENSOR_NAME, sizeof(info->name));
-	if (s_ctrl->pipeline_delay >= 1 && s_ctrl->pipeline_delay <= 3)
+	if (s_ctrl->pipeline_delay >= 0 && s_ctrl->pipeline_delay <= 3)// XIAOMI: libin16 change
 		info->p_delay = s_ctrl->pipeline_delay;
 	else
 		info->p_delay = 2;
 	info->trigger = CAM_TRIGGER_POINT_SOF;
+
+	// XIAOMI: libin16 add Only for face unlock --start
+	if (g_operation_mode == 0x8006)
+		info->p_delay = 0;
+	// XIAOMI: libin16 add Only for face unlock --end
 
 	return rc;
 }
@@ -1196,6 +1207,16 @@ int cam_sensor_apply_settings(struct cam_sensor_ctrl_t *s_ctrl,
 		if (i2c_set->is_settings_valid == 1) {
 			list_for_each_entry(i2c_list,
 				&(i2c_set->list_head), list) {
+				/* Added by qudao1@xiaomi.com */
+					s_ctrl->io_master_info.cci_client->cci_i2c_master,
+					s_ctrl->io_master_info.cci_client->sid << 1,
+					s_ctrl->io_master_info.cci_client->i2c_freq_mode;
+				for (i = 0; i < i2c_list->i2c_settings.size; i++) {
+						i2c_list->i2c_settings.reg_setting[i].reg_addr,
+						i2c_list->i2c_settings.reg_setting[i].reg_data,
+						i2c_list->i2c_settings.reg_setting[i].delay;
+				}
+				/* End of Added by qudao1@xiaomi.com */
 				rc = cam_sensor_i2c_modes_util(
 					&(s_ctrl->io_master_info),
 					i2c_list);
