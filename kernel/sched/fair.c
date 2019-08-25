@@ -8274,6 +8274,13 @@ static int find_energy_efficient_cpu(struct sched_domain *sd,
 		prefer_idle = sched_feat(EAS_PREFER_IDLE) ?
 				(schedtune_prefer_idle(p) > 0) : 0;
 
+		/*
+		 * Attempt to expedite CPU selection for FIFO or
+		 * RR tasks by selecting the first idle CPU found.
+		 */
+		if (sched_feat(RT_PREFER_IDLE) && task_has_rt_policy(p))
+			prefer_idle = 1;
+
 		eenv->max_cpu_count = EAS_CPU_BKP + 1;
 
 		fbt_env.rtg_target = rtg_target;
