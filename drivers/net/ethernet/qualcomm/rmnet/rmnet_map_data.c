@@ -712,6 +712,7 @@ __rmnet_map_segment_coal_skb(struct sk_buff *coal_skb,
 	struct rmnet_priv *priv = netdev_priv(coal_skb->dev);
 	__sum16 *check = NULL;
 	u32 alloc_len;
+	bool zero_csum = false;
 
 	/* We can avoid copying the data if the SKB we got from the lower-level
 	 * drivers was nonlinear.
@@ -743,6 +744,8 @@ __rmnet_map_segment_coal_skb(struct sk_buff *coal_skb,
 
 		uh->len = htons(skbn->len);
 		check = &uh->check;
+		if (coal_meta->ip_proto == 4 && !uh->check)
+			zero_csum = true;
 	}
 
 	/* Push IP header and update necessary fields */
@@ -763,8 +766,9 @@ __rmnet_map_segment_coal_skb(struct sk_buff *coal_skb,
 	}
 
 	/* Handle checksum status */
-	if (likely(csum_valid)) {
-		skbn->ip_summed = CHECKSUM_UNNECESSARY;
+	if (likely(csum_valid) || zero_csum) {
+		/* Set the partial checksum information */
+		rmnet_map_partial_csum(skbn, coal_meta);
 	} else if (check) {
 		/* Unfortunately, we have to fake a bad checksum here, since
 		 * the original bad value is lost by the hardware. The only
@@ -860,6 +864,7 @@ static void rmnet_map_segment_coal_skb(struct sk_buff *coal_skb,
 	u8 pkt, total_pkt = 0;
 	u8 nlo;
 	bool gro = coal_skb->dev->features & NETIF_F_GRO_HW;
+	bool zero_csum = false;
 
 	memset(&coal_meta, 0, sizeof(coal_meta));
 
@@ -921,12 +926,15 @@ static void rmnet_map_segment_coal_skb(struct sk_buff *coal_skb,
 		uh = (struct udphdr *)((u8 *)iph + coal_meta.ip_len);
 		coal_meta.trans_len = sizeof(*uh);
 		coal_meta.trans_header = uh;
+		/* Check for v4 zero checksum */
+		if (coal_meta.ip_proto == 4 && !uh->check)
+			zero_csum = true;
 	} else {
 		priv->stats.coal.coal_trans_invalid++;
 		return;
 	}
 
-	if (rmnet_map_v5_csum_buggy(coal_hdr)) {
+	if (rmnet_map_v5_csum_buggy(coal_hdr) && !zero_csum) {
 		rmnet_map_move_headers(coal_skb);
 		/* Mark as valid if it checks out */
 		if (rmnet_map_validate_csum(coal_skb, &coal_meta))
