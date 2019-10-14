@@ -260,6 +260,9 @@ netdev_tx_t atl_start_xmit(struct sk_buff *skb, struct net_device *ndev)
 	struct atl_txbuf *txbuf;
 	uint32_t cmd_from_ctx;
 
+	if (nic->priv_flags & ATL_PF_BIT(LPB_NET_DMA))
+		return NETDEV_TX_BUSY;
+
 	if (tx_full(ring, skb_shinfo(skb)->nr_frags + 4)) {
 		atl_update_ring_stat(ring, tx.tx_busy, 1);
 		return NETDEV_TX_BUSY;
@@ -1717,6 +1720,15 @@ stop:
 	return ret;
 }
 
+void atl_clear_tdm_cache(struct atl_nic *nic)
+{
+	struct atl_hw *hw = &nic->hw;
+
+	atl_write_bit(hw, 0x7b00, 0, 1);
+	udelay(10);
+	atl_write_bit(hw, 0x7b00, 0, 0);
+}
+
 void atl_clear_rdm_cache(struct atl_nic *nic)
 {
 	struct atl_hw *hw = &nic->hw;
@@ -1739,6 +1751,7 @@ void atl_stop_rings(struct atl_nic *nic)
 		atl_stop_qvec(qvec);
 
 	atl_clear_rdm_cache(nic);
+	atl_clear_tdm_cache(nic);
 }
 
 int atl_set_features(struct net_device *ndev, netdev_features_t features)
@@ -1784,7 +1797,6 @@ void atl_update_global_stats(struct atl_nic *nic)
 		return;
 
 	memset(&stats, 0, sizeof(stats));
-	atl_update_eth_stats(nic);
 
 	spin_lock(&nic->stats_lock);
 
