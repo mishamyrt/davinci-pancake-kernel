@@ -271,12 +271,33 @@ static ssize_t disp_param_store(struct device *device,
 	return count;
 }
 
+extern ssize_t mipi_reg_write(char *buf, size_t count);
+extern ssize_t mipi_reg_read(char *buf);
+
+static ssize_t mipi_reg_show(struct device *device,
+			    struct device_attribute *attr,
+			   char *buf)
+{
+	return mipi_reg_read(buf);
+}
+
+static ssize_t mipi_reg_store(struct device *device,
+			   struct device_attribute *attr,
+			   const char *buf, size_t count)
+{
+	int rc = 0;
+
+	rc = mipi_reg_write((char *)buf, count);
+	return rc;
+}
+
 static DEVICE_ATTR_RW(status);
 static DEVICE_ATTR_RO(enabled);
 static DEVICE_ATTR_RO(dpms);
 static DEVICE_ATTR_RO(modes);
 static DEVICE_ATTR_WO(disp_param);
 static DEVICE_ATTR_RO(doze_brightness);
+static DEVICE_ATTR_RW(mipi_reg);
 
 static struct attribute *connector_dev_attrs[] = {
 	&dev_attr_status.attr,
@@ -285,6 +306,7 @@ static struct attribute *connector_dev_attrs[] = {
 	&dev_attr_modes.attr,
 	&dev_attr_disp_param.attr,
 	&dev_attr_doze_brightness.attr,
+	&dev_attr_mipi_reg.attr,
 	NULL
 };
 
