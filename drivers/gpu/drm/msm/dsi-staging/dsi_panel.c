@@ -33,6 +33,11 @@
 
 #include "dsi_panel_mi.h"
 
+#define DSI_READ_WRITE_PANEL_DEBUG 1
+#if DSI_READ_WRITE_PANEL_DEBUG
+#include <linux/proc_fs.h>
+#include <linux/seq_file.h>
+#endif
 
 /**
  * topology is currently defined by a set of following 3 values:
@@ -75,6 +80,11 @@ int dsi_display_read_panel(struct dsi_panel *panel, struct dsi_read_config *read
 static int string_merge_into_buf(const char *str, int len, char *buf);
 
 static struct dsi_read_config read_reg;
+
+#if DSI_READ_WRITE_PANEL_DEBUG
+static struct proc_dir_entry *mipi_proc_entry = NULL;
+#define MIPI_PROC_NAME "mipi_reg"
+#endif
 
 enum dsi_dsc_ratio_type {
 	DSC_8BPC_8BPP,
@@ -3790,6 +3800,71 @@ error:
 	return rc;
 }
 
+#if DSI_READ_WRITE_PANEL_DEBUG
+static ssize_t mipi_reg_procfs_write(struct file *file, const char __user *buf,
+	size_t count, loff_t *offp)
+{
+	int retval = 0;
+	char *input = NULL;
+
+	input = kmalloc(count, GFP_KERNEL);
+	if (!input) {
+		return -ENOMEM;
+	}
+	if (copy_from_user(input, buf, count)) {
+		pr_err("copy from user failed\n");
+		retval = -EFAULT;
+		goto end;
+	}
+	input[count-1] = '\0';
+	pr_debug("copy_from_user input: %s\n", input);
+
+	retval = mipi_reg_write(input, count);
+end:
+	kfree(input);
+	return retval;
+}
+
+static int mipi_reg_procfs_show(struct seq_file *m, void *v)
+{
+	struct dsi_panel *panel = (struct dsi_panel *)m->private;
+	int i = 0;
+
+	mutex_lock(&panel->panel_lock);
+
+	if (!panel) {
+		mutex_unlock(&panel->panel_lock);
+		return -EAGAIN;
+	}
+
+	if (read_reg.enabled) {
+		seq_printf(m, "return value: ");
+		for (i = 0; i < read_reg.cmds_rlen; i++) {
+			printk("0x%02x ", read_reg.rbuf[i]);
+			seq_printf(m, "0x%02x ", read_reg.rbuf[i]);
+		}
+	}
+	seq_printf(m,"\n");
+	mutex_unlock(&panel->panel_lock);
+
+	return 0;
+}
+
+static int mipi_reg_procfs_open(struct inode *inode, struct file *file)
+{
+	return single_open(file, mipi_reg_procfs_show, g_panel);
+}
+
+const struct file_operations mipi_reg_proc_fops = {
+	.owner   = THIS_MODULE,
+	.open    = mipi_reg_procfs_open,
+	.write   = mipi_reg_procfs_write,
+	.read    = seq_read,
+	.llseek  = seq_lseek,
+	.release = single_release,
+};
+#endif
+
 int dsi_panel_drv_init(struct dsi_panel *panel,
 		       struct mipi_dsi_host *host)
 {
@@ -3842,6 +3917,13 @@ int dsi_panel_drv_init(struct dsi_panel *panel,
 			       panel->name, rc);
 		goto error_gpio_release;
 	}
+
+#if DSI_READ_WRITE_PANEL_DEBUG
+	mipi_proc_entry = proc_create(MIPI_PROC_NAME, 0, NULL, &mipi_reg_proc_fops);
+	if (!mipi_proc_entry)
+		printk(KERN_WARNING "mipi_reg: unable to create proc entry.\n");
+#endif
+
 	goto exit;
 
 error_gpio_release:
@@ -3887,6 +3969,13 @@ int dsi_panel_drv_deinit(struct dsi_panel *panel)
 
 	panel->host = NULL;
 	memset(&panel->mipi_device, 0x0, sizeof(panel->mipi_device));
+
+#if DSI_READ_WRITE_PANEL_DEBUG
+	if (mipi_proc_entry) {
+		remove_proc_entry(MIPI_PROC_NAME, NULL);
+		mipi_proc_entry = NULL;
+	}
+#endif
 
 	mutex_unlock(&panel->panel_lock);
 	return rc;
