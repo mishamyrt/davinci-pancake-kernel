@@ -7,6 +7,14 @@ And public attribution of xiaomi platforms(like F10 and so on)
 #include "xiaomi-sdmmagpie-common.dtsi"
 #include "davinci-sdmmagpie-camera-sensor.dtsi"
 
+&soc {
+	mtp_batterydata: qcom,battery-data {
+		qcom,batt-id-range-pct = <15>;
+		#include "batterydata-F10-coslight-4000mah.dtsi"
+		#include "batterydata-F10-sunwoda-4000mah.dtsi"
+	};
+};
+
 &pm6150_qg {
 	qcom,battery-data = <&mtp_batterydata>;
 	qcom,vbatt-cutoff-mv = <3400>;
@@ -15,8 +23,8 @@ And public attribution of xiaomi platforms(like F10 and so on)
 	qcom,vbatt-empty-mv = <3100>;
 	qcom,vbatt-empty-cold-mv = <3100>;
 	qcom,s3-entry-fifo-length = <2>;
-	qcom,s3-entry-ibat-ua = <30000>;
-	qcom,s3-exit-ibat-ua = <50000>;
+	qcom,s3-entry-ibat-ua = <25000>;
+	qcom,s3-exit-ibat-ua = <45000>;
 	qcom,qg-iterm-ma = <350>;
 	qcom,hold-soc-while-full;
 	qcom,linearize-soc;
@@ -81,6 +89,7 @@ And public attribution of xiaomi platforms(like F10 and so on)
 				   1000000 700000>;
 	dpdm-supply = <&qusb_phy0>;
 	qcom,sw-jeita-enable;
+	qcom,step-charging-enable;
 	qcom,lpd-disable;
 };
 
@@ -291,9 +300,6 @@ And public attribution of xiaomi platforms(like F10 and so on)
 };
 
 &pm6150l_vadc {
-	pinctrl-names = "default";
-	pinctrl-0 = <&nvm_therm_default>;
-
 	conn_therm {
 		reg = <ADC_AMUX_THM1_PU2>;
 		label = "conn_therm";
@@ -324,6 +330,94 @@ And public attribution of xiaomi platforms(like F10 and so on)
 		qcom,hw-settle-time = <200>;
 		qcom,pre-scaling = <1 1>;
 	};
+};
+
+&qupv3_se8_2uart {
+	status = "ok";
+};
+
+&qupv3_se9_i2c {
+	status = "ok";
+
+	/* FCAM Digital HALL */
+	akm09970@c {
+		compatible = "akm,akm09970";
+		reg = <0xC>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <120 0>;
+		akm,gpio-reset = <&tlmm 64 0x00>;
+		akm,gpio-irq = <&tlmm 93 0x00>;
+		akm,measure-freq-hz = <100>;
+		vdd-supply = <&pm6150l_l8>;
+
+		pinctrl-names = "akm09970_gpio_active", "akm09970_gpio_suspend";
+		pinctrl-0 = <&akm_irq_active &akm_reset_active>;
+		pinctrl-1 = <&akm_irq_suspend &akm_reset_suspend>;
+		status = "ok";
+	};
+};
+
+&dsi_sw43404_amoled_video {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply_labibb_amoled>;
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
+	qcom,mdss-dsi-bl-min-level = <1>;
+	qcom,mdss-dsi-bl-max-level = <1023>;
+	qcom,platform-te-gpio = <&tlmm 10 0>;
+	qcom,platform-reset-gpio = <&pm6150l_gpios 9 0>;
+};
+
+&dsi_sw43404_amoled_cmd {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply_labibb_amoled>;
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
+	qcom,mdss-dsi-bl-min-level = <1>;
+	qcom,mdss-dsi-bl-max-level = <1023>;
+	qcom,platform-te-gpio = <&tlmm 10 0>;
+	qcom,platform-reset-gpio = <&pm6150l_gpios 9 0>;
+};
+
+&dsi_sw43404_amoled_fhd_plus_cmd {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply_labibb_amoled>;
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
+	qcom,mdss-dsi-bl-min-level = <1>;
+	qcom,mdss-dsi-bl-max-level = <1023>;
+	qcom,platform-te-gpio = <&tlmm 10 0>;
+	qcom,platform-reset-gpio = <&pm6150l_gpios 9 0>;
+};
+
+&dsi_sim_cmd {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
+	qcom,platform-reset-gpio = <&pm6150l_gpios 9 0>;
+};
+
+&dsi_sim_vid {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
+	qcom,platform-reset-gpio = <&pm6150l_gpios 9 0>;
+};
+
+&dsi_dual_sim_cmd {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
+	qcom,platform-reset-gpio = <&pm6150l_gpios 9 0>;
+};
+
+&dsi_dual_sim_vid {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
+	qcom,platform-reset-gpio = <&pm6150l_gpios 9 0>;
+};
+
+&dsi_sim_dsc_375_cmd {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
+	qcom,platform-reset-gpio = <&pm6150l_gpios 9 0>;
+};
+
+&dsi_dual_sim_dsc_375_cmd {
+	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
+	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
+	qcom,platform-reset-gpio = <&pm6150l_gpios 9 0>;
 };
 
 &pm6150l_gpios {

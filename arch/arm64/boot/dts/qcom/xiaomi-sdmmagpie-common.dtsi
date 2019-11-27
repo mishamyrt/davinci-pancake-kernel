@@ -18,14 +18,6 @@
 
 #include "sdmmagpie-sde-display.dtsi"
 
-&soc {
-	mtp_batterydata: qcom,battery-data {
-		qcom,batt-id-range-pct = <15>;
-		#include "batterydata-F10-coslight-4000mah.dtsi"
-		#include "batterydata-F10-sunwoda-4000mah.dtsi"
-	};
-};
-
 &tlmm {
 	pmx_ts_active {
 		ts_active: ts_active {
@@ -71,18 +63,9 @@
 				};
 			};
 	};
-
-};
-
-&qupv3_se8_2uart {
-	status = "ok";
 };
 
 &qupv3_se3_4uart {
-	status = "ok";
-};
-
-&pm6150a_amoled {
 	status = "ok";
 };
 
@@ -148,69 +131,6 @@
 	//cd-gpios = <&tlmm 69 GPIO_ACTIVE_HIGH>;
 
 	status = "disabled";
-};
-
-&dsi_sw43404_amoled_video {
-	qcom,panel-supply-entries = <&dsi_panel_pwr_supply_labibb_amoled>;
-	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
-	qcom,mdss-dsi-bl-min-level = <1>;
-	qcom,mdss-dsi-bl-max-level = <1023>;
-	qcom,platform-te-gpio = <&tlmm 10 0>;
-	qcom,platform-reset-gpio = <&pm6150l_gpios 9 0>;
-};
-
-&dsi_sw43404_amoled_cmd {
-	qcom,panel-supply-entries = <&dsi_panel_pwr_supply_labibb_amoled>;
-	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
-	qcom,mdss-dsi-bl-min-level = <1>;
-	qcom,mdss-dsi-bl-max-level = <1023>;
-	qcom,platform-te-gpio = <&tlmm 10 0>;
-	qcom,platform-reset-gpio = <&pm6150l_gpios 9 0>;
-};
-
-&dsi_sw43404_amoled_fhd_plus_cmd {
-	qcom,panel-supply-entries = <&dsi_panel_pwr_supply_labibb_amoled>;
-	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
-	qcom,mdss-dsi-bl-min-level = <1>;
-	qcom,mdss-dsi-bl-max-level = <1023>;
-	qcom,platform-te-gpio = <&tlmm 10 0>;
-	qcom,platform-reset-gpio = <&pm6150l_gpios 9 0>;
-};
-
-&dsi_sim_cmd {
-	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
-	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
-	qcom,platform-reset-gpio = <&pm6150l_gpios 9 0>;
-};
-
-&dsi_sim_vid {
-	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
-	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
-	qcom,platform-reset-gpio = <&pm6150l_gpios 9 0>;
-};
-
-&dsi_dual_sim_cmd {
-	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
-	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
-	qcom,platform-reset-gpio = <&pm6150l_gpios 9 0>;
-};
-
-&dsi_dual_sim_vid {
-	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
-	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
-	qcom,platform-reset-gpio = <&pm6150l_gpios 9 0>;
-};
-
-&dsi_sim_dsc_375_cmd {
-	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
-	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
-	qcom,platform-reset-gpio = <&pm6150l_gpios 9 0>;
-};
-
-&dsi_dual_sim_dsc_375_cmd {
-	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
-	qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
-	qcom,platform-reset-gpio = <&pm6150l_gpios 9 0>;
 };
 
 &pm6150l_gpios {
@@ -293,32 +213,17 @@
 	status = "disabled";
 };
 
-&sde_dp {
-	pinctrl-names = "mdss_dp_active", "mdss_dp_sleep";
-	pinctrl-0 = <&sde_dp_aux_active &sde_dp_usbplug_cc_active>;
-	pinctrl-1 = <&sde_dp_aux_suspend &sde_dp_usbplug_cc_suspend>;
-	qcom,aux-en-gpio = <&tlmm 42 0>;
-	qcom,aux-sel-gpio = <&tlmm 33 0>;
-	qcom,dp-gpio-aux-switch;
-};
+&reserved_memory {
 
-&qupv3_se9_i2c {
-	status = "ok";
+	ramdump_fb_mem: ramdump_fb_region@af000000 {
+		compatible = "removed-dma-pool";
+		no-map;
+		reg = <0x00 0xaf000000 0x00 0x1000000>;
+	};
 
-	/* FCAM Digital HALL */
-	akm09970@c {
-		compatible = "akm,akm09970";
-		reg = <0xC>;
-		interrupt-parent = <&tlmm>;
-		interrupts = <120 0>;
-		akm,gpio-reset = <&tlmm 64 0x00>;
-		akm,gpio-irq = <&tlmm 93 0x00>;
-		akm,measure-freq-hz = <100>;
-		vdd-supply = <&pm6150l_l8>;
-
-		pinctrl-names = "akm09970_gpio_active", "akm09970_gpio_suspend";
-		pinctrl-0 = <&akm_irq_active &akm_reset_active>;
-		pinctrl-1 = <&akm_irq_suspend &akm_reset_suspend>;
-		status = "ok";
+	xbl_dump_mem: xbl_dump_mem@85d00000 {
+		compatible = "removed-dma-pool";
+		no-map;
+		reg = <0x00 0x85d00000 0x00 0x100000>;
 	};
 };
