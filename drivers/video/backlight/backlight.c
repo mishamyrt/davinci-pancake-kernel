@@ -191,6 +191,13 @@ int backlight_device_set_brightness(struct backlight_device *bd,
 			}
 
 			pr_debug("set brightness to %lu\n", brightness);
+			if (!brightness) {
+				bl_event = BACKLIGHT_OFF;
+				blocking_notifier_call_chain(&backlight_notifier, BACKLIGHT_UPDATED, &bl_event);
+			} else if (bl_event != BACKLIGHT_ON) {
+				bl_event = BACKLIGHT_ON;
+				blocking_notifier_call_chain(&backlight_notifier, BACKLIGHT_UPDATED, &bl_event);
+			}
 			bd->props.brightness = brightness;
 			rc = backlight_update_status(bd);
 		}
