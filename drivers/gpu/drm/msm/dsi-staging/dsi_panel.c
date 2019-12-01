@@ -5439,3 +5439,54 @@ error:
 	mutex_unlock(&panel->panel_lock);
 	return rc;
 }
+
+ssize_t dsi_panel_disp_count_get(struct dsi_display *display, char *buf)
+{
+	int ret = -1;
+	struct timespec64 now_boot;
+	u64 record_end = 0;
+	/* struct timespec rtctime; */
+	struct dsi_panel *panel = NULL;
+
+	if (!display || !display->panel || !display->drm_dev) {
+		pr_err("invalid display/panel/drm_dev\n");
+		return -EINVAL;
+	}
+
+	if (buf == NULL) {
+		pr_err("dsi_panel_disp_count_get buffer is NULL!\n");
+		return -EINVAL;
+	}
+
+	panel = display->panel;
+	get_monotonic_boottime64(&now_boot);
+	/* getnstimeofday(&rtctime); */
+
+	ret = scnprintf(buf, PAGE_SIZE,
+		"panel_active=%llu\n"
+		"panel_kickoff_count=%llu\n"
+		"kernel_boottime=%llu\n"
+		"kernel_rtctime=%llu\n"
+		"kernel_days=%llu\n"
+		"bl_duration=%llu\n"
+		"bl_level_integral=%llu\n"
+		"bl_highlevel_duration=%llu\n"
+		"bl_lowlevel_duration=%llu\n"
+		"hbm_duration=%llu\n"
+		"hbm_times=%llu\n"
+		"record_end=%llu\n",
+		panel->panel_active,
+		panel->kickoff_count,
+		panel->boottime + now_boot.tv_sec,
+		panel->bootRTCtime,
+		panel->bootdays,
+		panel->bl_duration,
+		panel->bl_level_integral,
+		panel->bl_highlevel_duration,
+		panel->bl_lowlevel_duration,
+		panel->hbm_duration,
+		panel->hbm_times,
+		record_end);
+
+	return ret;
+}
