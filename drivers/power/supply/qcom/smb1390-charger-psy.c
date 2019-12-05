@@ -1406,8 +1406,16 @@ static int smb1390_get_prop(struct power_supply *psy,
 		val->intval = chip->min_ilim_ua;
 		break;
 	case POWER_SUPPLY_PROP_MODEL_NAME:
+#ifdef CONFIG_MACH_XIAOMI_F10
+		rc = smb1390_read(chip, CORE_STATUS1_REG, &status);
+		if (rc < 0)
+			val->strval = "unknown";
+		else
+			val->strval = "smb1390";
+#else
 		val->strval = (chip->pmic_rev_id->rev4 > 2) ? "SMB1390_V3" :
 								"SMB1390_V2";
+#endif
 		break;
 	case POWER_SUPPLY_PROP_PARALLEL_MODE:
 		val->intval = chip->pl_input_mode;
