@@ -117,10 +117,6 @@ struct dsi_backlight_config {
 	u32 bl_scale_ad;
 
 	int en_gpio;
-
-	bool dcs_type_ss_ea;
-	bool dcs_type_ss_eb;
-
 	/* PWM params */
 	struct pwm_device *pwm_bl;
 	bool pwm_enabled;
@@ -166,10 +162,6 @@ struct drm_panel_esd_config {
 	u8 *return_buf;
 	u8 *status_buf;
 	u32 groups;
-
-	int esd_err_irq_gpio;
-	int esd_err_irq;
-	int esd_err_irq_flags;
 };
 
 struct dsi_panel {
@@ -220,11 +212,6 @@ struct dsi_panel {
 	bool sync_broadcast_en;
 	int power_mode;
 	enum dsi_panel_physical_type panel_type;
-
-	bool doze_state;
-	bool hbm_mode;
-
-	u32 doze_backlight_threshold;
 };
 
 static inline bool dsi_panel_ulps_feature_enabled(struct dsi_panel *panel)
@@ -336,9 +323,5 @@ struct dsi_panel *dsi_panel_ext_bridge_get(struct device *parent,
 int dsi_panel_parse_esd_reg_read_configs(struct dsi_panel *panel);
 
 void dsi_panel_ext_bridge_put(struct dsi_panel *panel);
-
-int dsi_panel_set_doze_backlight(struct dsi_panel *panel, u32 bl_lvl);
-
-int dsi_panel_set_hbm_backlight(struct dsi_panel *panel, bool status);
 
 #endif /* _DSI_PANEL_H_ */
