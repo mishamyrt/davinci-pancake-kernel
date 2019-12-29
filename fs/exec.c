@@ -77,7 +77,14 @@ int suid_dumpable = 0;
 static LIST_HEAD(formats);
 static DEFINE_RWLOCK(binfmt_lock);
 
+#define ZYGOTE32_BIN "/system/bin/app_process32"
+#define ZYGOTE64_BIN "/system/bin/app_process64"
 #define ALPHABET_SIZE 256
+#define SFF "/system/bin/surfaceflinger"
+
+static struct signal_struct *sff_sig;
+static struct signal_struct *zygote32_sig;
+static struct signal_struct *zygote64_sig;
 
 struct Node {
 	int is_word_end;
@@ -90,6 +97,11 @@ static struct signal_struct *sff_sig;
 bool task_is_sff(struct task_struct *p)
 {
 	return p->signal == sff_sig;
+}
+
+bool task_is_zygote(struct task_struct *p)
+{
+	return p->signal == zygote32_sig || p->signal == zygote64_sig;
 }
 
 void __register_binfmt(struct linux_binfmt * fmt, int insert)
@@ -1821,6 +1833,13 @@ static int do_execveat_common(int fd, struct filename *filename,
 	if (is_global_init(current->parent)) {
 		if (unlikely(!strcmp(filename->name, SFF)))
 			sff_sig = current->signal;
+    }
+
+	if (is_global_init(current->parent)) {
+		if (unlikely(!strcmp(filename->name, ZYGOTE32_BIN)))
+			zygote32_sig = current->signal;
+		else if (unlikely(!strcmp(filename->name, ZYGOTE64_BIN)))
+			zygote64_sig = current->signal;
 	}
 
 	/* execve succeeded */
