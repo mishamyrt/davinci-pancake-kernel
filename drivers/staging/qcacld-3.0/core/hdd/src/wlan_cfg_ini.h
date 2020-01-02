@@ -152,7 +152,6 @@ static const char wlan_cfg[] __initconst = {
 	"enable_ftopen=0\n"
 	"g_sta_sap_scc_on_lte_coex_chan=1\n"
 	"gcmp_enabled=1\n"
-	"drop_bcn_on_chan_mismatch=0\n"
 	"enable_rtt_mac_randomization=1\n"
 	"gDualMacFeatureDisable=0\n"
 	"gEnableSNRMonitoring=1\n"
