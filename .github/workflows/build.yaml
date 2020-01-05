@@ -1,0 +1,66 @@
+name: build
+
+on: push
+
+env:
+  DEFCONFIG: "vendor/davinci_defconfig"
+  ARCH: "arm64"
+  SUBARCH: "arm64"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+
+    - name: Install system dependencies
+      run: |
+        sudo apt update
+        sudo apt install binutils
+        sudo apt install git ccache automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib python-networkx libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip -y
+
+    - name: Setup compillers
+      run: |
+        git clone --depth=1 https://github.com/mishamyrt/dragon-llvm.git llvm
+        git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9 toolchain
+        git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9 toolchain32
+        mkdir dtbo-utils
+        cd dtbo-utils
+        wget https://android.googlesource.com/platform/system/libufdt/+archive/master/utils.tar.gz
+        tar xzf utils.tar.gz
+
+    - name: Append branch name
+      run: python3 scripts/pancake/expose-version.py
+    
+    - name: Configure
+      run: make O=out ARCH=$ARCH $DEFCONFIG
+
+    - name: Build kernel
+      run: |
+        mkdir -p out
+        PATH="${PWD}/llvm/bin:${PWD}/toolchain/bin:${PATH}" make -j$(nproc --all) O=out ARCH=arm64 CC=clang CLANG_TRIPLE=${PWD}/bin/aarch64-linux-gnu- CROSS_COMPILE=${PWD}/toolchain/bin/aarch64-linux-android- CROSS_COMPILE_ARM32=${PWD}/toolchain32/bin/arm-linux-androideabi-
+
+    - name: Build DTBO
+      run: |
+        cd dtbo-utils/src/
+        python mkdtboimg.py create ../../out/arch/arm64/boot/dtbo.img ../../out/arch/arm64/boot/dts/qcom/*.dtbo
+
+    - name: Pack installer
+      run: |
+        mv out/arch/arm64/boot/Image.gz anykernel/
+        mv out/arch/arm64/boot/dtbo.img anykernel/
+        cd anykernel/
+        zip -r9 pancake-mishamyrt.zip * -x *placeholder
+        mv pancake-mishamyrt.zip ../out/
+    
+    - name: Upload installer
+      uses: actions/upload-artifact@v1
+      with:
+        name: pancake-mishamyrt
+        path: out/pancake-mishamyrt.zip
+
+    - name: Post update to Telegram
+      env:
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      run: python3 scripts/pancake/telegram-post.py        
