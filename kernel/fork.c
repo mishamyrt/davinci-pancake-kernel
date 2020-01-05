@@ -91,6 +91,8 @@
 #include <linux/livepatch.h>
 #include <linux/thread_info.h>
 #include <linux/cpufreq_times.h>
+#include <linux/cpufreq.h>
+#include <linux/devfreq_boost.h>
 
 #include <asm/pgtable.h>
 #include <asm/pgalloc.h>
@@ -2069,6 +2071,9 @@ long _do_fork(unsigned long clone_flags,
 	struct task_struct *p;
 	int trace = 0;
 	long nr;
+
+    if (is_zygote_pid(current->pid))
+		devfreq_boost_kick_max(DEVFREQ_MSM_CPUBW, 1000);
 
 	/*
 	 * Determine whether and which event to report to ptracer.  When
