@@ -42,6 +42,13 @@ case "$ZIPFILE" in
     ;;
 esac
 
+mountpoint -q /data && {
+    # Install second-stage late init script
+    mkdir -p /data/adb/service.d
+    cp ./95-pancake.sh /data/adb/service.d
+    chmod +x /data/adb/service.d/95-pancake.sh
+} || ui_print 'Data is not mounted; some tweaks will be missing'
+
 ## AnyKernel install
 dump_boot;
 write_boot;
