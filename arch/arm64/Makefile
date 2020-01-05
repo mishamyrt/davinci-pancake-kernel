@@ -178,6 +178,8 @@ core-$(CONFIG_CRYPTO) += arch/arm64/crypto/
 libs-y		:= arch/arm64/lib/ $(libs-y)
 core-$(CONFIG_EFI_STUB) += $(objtree)/drivers/firmware/efi/libstub/lib.a
 
+KBUILD_CFLAGS += $(call cc-option,-march=armv8l,) $(call cc-option,-mcpu=cortex-a55.cortex.a76+crypto+crc,)
+
 ifeq ($(CONFIG_BUILD_ARM64_KERNEL_COMPRESSION_GZIP),y)
 KBUILD_IMAGE   := Image.gz
 else
