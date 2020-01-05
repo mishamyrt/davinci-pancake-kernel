@@ -1009,8 +1009,8 @@ static int dsi_panel_parse_timing(struct dsi_mode_info *mode,
 		goto error;
 	}
 
-	if (mode->refresh_rate != 60) {
-		pr_info("setting panel refresh rate to values above 60 is not allowed");
+	if (mode->refresh_rate > 67) {
+		pr_info("setting panel refresh rate to values above 67 is not allowed");
 		BUG();
 	}
 
