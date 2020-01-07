@@ -11,6 +11,7 @@
 #include <linux/oom.h>
 #include <linux/sort.h>
 #include <linux/version.h>
+#include <linux/devfreq_boost.h>
 
 /* The sched_param struct is located elsewhere in newer kernels */
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
@@ -175,6 +176,7 @@ static void scan_and_kill(unsigned long pages_needed)
 	 * is preferred to holding an RCU read lock so that the list of tasks
 	 * is guaranteed to be up to date.
 	 */
+    devfreq_boost_kick_max(DEVFREQ_MSM_CPUBW, 50);
 	read_lock(&tasklist_lock);
 	for (i = 0; i < ARRAY_SIZE(adj_prio); i++) {
 		pages_found += find_victims(&nr_victims, adj_prio[i]);
