@@ -800,6 +800,7 @@ static int __noreturn rcu_tasks_kthread(void *arg)
 		 * holdouts.  When the list is empty, we are done.
 		 */
 		lastreport = jiffies;
+
 		/* Start off with HZ/10 wait and slowly back off to 1 HZ wait*/
 		fract = 10;
 
@@ -817,6 +818,7 @@ static int __noreturn rcu_tasks_kthread(void *arg)
 
 			if (fract > 1)
 				fract--;
+
 			rtst = READ_ONCE(rcu_task_stall_timeout);
 			needreport = rtst > 0 &&
 				     time_after(jiffies, lastreport + rtst);
