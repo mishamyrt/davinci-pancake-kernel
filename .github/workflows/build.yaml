@@ -6,6 +6,10 @@ env:
   DEFCONFIG: "vendor/davinci_defconfig"
   ARCH: "arm64"
   SUBARCH: "arm64"
+  GCC64_FOLDER: "toolchains/gcc64"
+  GCC32_FOLDER: "toolchains/gcc32"
+  DTBO_UTILS_FOLDER: "toolchains/dtbo"
+  LLVM_FOLDER: "toolchains/llvm"
 
 jobs:
   build:
@@ -15,20 +19,38 @@ jobs:
       uses: actions/checkout@v1
 
     - name: Install system dependencies
+      env:
+        UBUNTU_DEPS: |
+          lib32z-dev automake flex lzop bison gperf build-essential bzip2 
+          curl zlib1g-dev g++-multilib python-networkx libc6-dev-i386 zip 
+          libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools schedtool 
+          pngcrush dpkg-dev liblz4-tool make optipng maven libswitch-perl 
+          libssl-dev unzip bc policycoreutils ccache libxml-sax-base-perl 
+          libxml-simple-perl libgl1-mesa-dev x11proto-core-dev libx11-dev 
+          git xsltproc libxml2-utils minicom lib32ncurses5-dev libelf-dev 
+          pwgen 
       run: |
         sudo apt update
-        sudo apt install binutils
-        sudo apt install git ccache automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib python-networkx libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip -y
+        sudo apt install $UBUNTU_DEPS -y
 
     - name: Setup compillers
+      env:
+        SHALLOW_CLONE: "git clone --depth=1 --single-branch"
+        GCC_PREFIX: "https://android.googlesource.com/platform/prebuilts/gcc/linux-x86"
+        GCC_POSTFIX: "+archive/refs/heads/master.tar.gz"
+        DTBO_UTILS_URL: "https://android.googlesource.com/platform/system/libufdt/+archive/master/utils.tar.gz"
+        LLVM_URL: "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86"
+        WGET: "wget -q -O"
       run: |
-        git clone --depth=1 https://github.com/mishamyrt/dragon-llvm.git llvm
-        git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9 toolchain
-        git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9 toolchain32
-        mkdir dtbo-utils
-        cd dtbo-utils
-        wget https://android.googlesource.com/platform/system/libufdt/+archive/master/utils.tar.gz
-        tar xzf utils.tar.gz
+        mkdir toolchains
+        $WGET gcc64.tar.gz "$GCC_PREFIX/aarch64/aarch64-linux-android-4.9/$GCC_POSTFIX"
+        $WGET gcc32.tar.gz "$GCC_PREFIX/arm/arm-linux-androideabi-4.9/$GCC_POSTFIX"
+        $WGET dtbo_utils.tar.gz "$DTBO_UTILS_URL"
+        $SHALLOW_CLONE $LLVM_URL toolchains/llvm
+        mkdir $GCC64_FOLDER $GCC32_FOLDER $DTBO_UTILS_FOLDER
+        tar -C $GCC64_FOLDER -zxf gcc64.tar.gz
+        tar -C $GCC32_FOLDER -zxf gcc32.tar.gz
+        tar -C $DTBO_UTILS_FOLDER -zxf dtbo_utils.tar.gz
 
     - name: Append branch name
       run: python3 scripts/pancake/expose-version.py
@@ -38,13 +60,20 @@ jobs:
 
     - name: Build kernel
       run: |
-        mkdir -p out
-        PATH="${PWD}/llvm/bin:${PWD}/toolchain/bin:${PATH}" make -j$(nproc --all) O=out ARCH=arm64 CC=clang CLANG_TRIPLE=${PWD}/bin/aarch64-linux-gnu- CROSS_COMPILE=${PWD}/toolchain/bin/aarch64-linux-android- CROSS_COMPILE_ARM32=${PWD}/toolchain32/bin/arm-linux-androideabi-
+        export LLVM_FINAL_FOLDER="${PWD}/${LLVM_FOLDER}/clang-r370808"
+        export LD_LIBRARY_PATH="${LLVM_FINAL_FOLDER}/lib64:${LLVM_FINAL_FOLDER}/lib:$LD_LIBRARY_PATH"
+        PATH="${LLVM_FINAL_FOLDER}/bin:${PWD}/$GCC32_FOLDER/bin:${PWD}/$GCC64_FOLDER/bin:${PATH}" \
+        make -j$(nproc --all) O=out \
+                              ARCH=arm64 \
+                              CC=clang \
+                              CLANG_TRIPLE=aarch64-linux-gnu- \
+                              CROSS_COMPILE=aarch64-linux-android- \
+                              CROSS_COMPILE_ARM32=arm-linux-androideabi-
 
     - name: Build DTBO
       run: |
-        cd dtbo-utils/src/
-        python mkdtboimg.py create ../../out/arch/arm64/boot/dtbo.img ../../out/arch/arm64/boot/dts/qcom/*.dtbo
+        cd $DTBO_UTILS_FOLDER/src/
+        python mkdtboimg.py create ../../../out/arch/arm64/boot/dtbo.img ../../../out/arch/arm64/boot/dts/qcom/*.dtbo
 
     - name: Pack installer
       run: |
