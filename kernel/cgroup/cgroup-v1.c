@@ -14,6 +14,9 @@
 #include <linux/pid_namespace.h>
 #include <linux/cgroupstats.h>
 
+#include <linux/binfmts.h>
+#include <linux/devfreq_boost.h>
+
 #include <trace/events/cgroup.h>
 
 /*
@@ -549,6 +552,11 @@ static ssize_t __cgroup1_procs_write(struct kernfs_open_file *of,
 		goto out_finish;
 
 	ret = cgroup_attach_task(cgrp, task, threadgroup);
+
+	if (!ret && !threadgroup && !strcmp(of->kn->parent->name, "top-app") &&
+	    task_is_zygote(task->parent)) {
+		devfreq_boost_kick_max(DEVFREQ_MSM_CPUBW, 1000);
+	}
 
 out_finish:
 	cgroup_procs_write_finish(task);
