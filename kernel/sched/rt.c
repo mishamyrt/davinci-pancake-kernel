@@ -9,8 +9,6 @@
 #include <linux/interrupt.h>
 #include <linux/slab.h>
 #include <linux/irq_work.h>
-#include <linux/binfmts.h>
-#include <linux/module.h>
 #include "tune.h"
 
 #include "walt.h"
@@ -1763,9 +1761,6 @@ static struct task_struct *pick_highest_pushable_task(struct rq *rq, int cpu)
 
 static DEFINE_PER_CPU(cpumask_var_t, local_cpu_mask);
 
-static int thr = 90;
-module_param(thr, int, 0644);
-
 static int rt_energy_aware_wake_cpu(struct task_struct *task)
 {
 	struct sched_domain *sd;
@@ -1786,11 +1781,6 @@ static int rt_energy_aware_wake_cpu(struct task_struct *task)
 #else
 	bool boost_on_big = false;
 #endif
-
-	if (unlikely(task_is_sff(task))) {
-		if (tutil > thr)
-			boost_on_big = true;
-	}
 
 	rcu_read_lock();
 
