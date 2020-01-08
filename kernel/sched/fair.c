@@ -7450,14 +7450,15 @@ static int start_cpu(struct task_struct *p, bool boosted,
 	int start_cpu = -1;
 
 	if (boosted) {
-		if (rd->mid_cap_orig_cpu != -1 &&
+		/*if (rd->mid_cap_orig_cpu != -1 &&
 		    task_fits_max(p, rd->mid_cap_orig_cpu))
 			return rd->mid_cap_orig_cpu;
+		*/
 		return rd->max_cap_orig_cpu;
 	}
 
-	if (sync_boost && rd->mid_cap_orig_cpu != -1)
-		return rd->mid_cap_orig_cpu;
+	if (sync_boost && rd->max_cap_orig_cpu != -1)
+		return rd->max_cap_orig_cpu;
 
 	/* A task always fits on its rtg_target */
 	if (rtg_target) {
@@ -7515,6 +7516,7 @@ static inline int find_best_target(struct task_struct *p, int *backup_cpu,
 	bool next_group_higher_cap = false;
 	int isolated_candidate = -1;
 	int mid_cap_orig_cpu = cpu_rq(smp_processor_id())->rd->mid_cap_orig_cpu;
+	int max_cap_orig_cpu = cpu_rq(6)->rd->max_cap_orig_cpu;
 	struct task_struct *curr_tsk;
 
 	*backup_cpu = -1;
@@ -7677,8 +7679,8 @@ static inline int find_best_target(struct task_struct *p, int *backup_cpu,
 				 * - for !boosted tasks: the most energy
 				 * efficient CPU (i.e. smallest capacity_orig)
 				 */
-				if (boosted && mid_cap_orig_cpu != -1 &&
-					best_idle_cpu == mid_cap_orig_cpu)
+				if (boosted && max_cap_orig_cpu != -1 &&
+					best_idle_cpu == max_cap_orig_cpu)
 					break;
 				if (idle_cpu(i)) {
 					if (boosted &&
@@ -7881,8 +7883,8 @@ static inline int find_best_target(struct task_struct *p, int *backup_cpu,
 				 * For boosted task, stop searching when an idle
 				 * cpu is found in mid cluster.
 				 */
-				if ((mid_cap_orig_cpu != -1 &&
-					best_idle_cpu >= mid_cap_orig_cpu) ||
+				if ((max_cap_orig_cpu != -1 &&
+					best_idle_cpu >= max_cap_orig_cpu) ||
 					!next_group_higher_cap)
 					break;
 			} else {
@@ -8514,7 +8516,7 @@ pick_cpu:
 			 * capacity cpu should be used.
 			*/
 			bool sync_boost = sync &&
-				      cpu >= cpu_rq(cpu)->rd->mid_cap_orig_cpu;
+				      cpu >= cpu_rq(cpu)->rd->max_cap_orig_cpu;
 
 			new_cpu = find_energy_efficient_cpu(energy_sd, p, cpu,
 						    prev_cpu, sync, sync_boost);
@@ -12194,7 +12196,7 @@ static inline bool nohz_kick_needed(struct rq *rq, bool only_update)
 		}
 	}
 
-	sd = rcu_dereference(per_cpu(sd_asym, cpu));
+	sd = rcu_dereference(per_cpu(sd_asym_packing, cpu));
 	if (sd) {
 		for_each_cpu(i, sched_domain_span(sd)) {
 			if (i == cpu ||

@@ -88,14 +88,6 @@ bool task_is_zygote(struct task_struct *task)
 	return task == zygote32_task || task == zygote64_task;
 }
 
-#define SFF "/system/bin/surfaceflinger"
-static struct signal_struct *sff_sig;
-
-bool task_is_sff(struct task_struct *p)
-{
-	return p->signal == sff_sig;
-}
-
 void __register_binfmt(struct linux_binfmt * fmt, int insert)
 {
 	BUG_ON(!fmt);
@@ -1830,11 +1822,6 @@ static int do_execveat_common(int fd, struct filename *filename,
 			zygote32_task = current;
 		else if (unlikely(!strcmp(filename->name, ZYGOTE64_BIN)))
 			zygote64_task = current;
-	}
-
-	if (is_global_init(current->parent)) {
-		if (unlikely(!strcmp(filename->name, SFF)))
-			sff_sig = current->signal;
 	}
 
 	/* execve succeeded */
