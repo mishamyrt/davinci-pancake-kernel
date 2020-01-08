@@ -16,11 +16,11 @@
 #include "sde_hw_color_proc_v4.h"
 
 static unsigned short kcal_red = 256;
-static unsigned short kcal_green = 237;
-static unsigned short kcal_blue = 234;
+static unsigned short kcal_green = 230;
+static unsigned short kcal_blue = 232;
 static unsigned short kcal_hue = 0;
-static unsigned short kcal_sat = 255;
-static unsigned short kcal_val = 255;
+static unsigned short kcal_sat = 252;
+static unsigned short kcal_val = 258;
 static unsigned short kcal_cont = 255;
 
 module_param(kcal_red, short, 0644);
