@@ -53,7 +53,7 @@ jobs:
         tar -C $DTBO_UTILS_FOLDER -zxf dtbo_utils.tar.gz
 
     - name: Append branch name
-      run: python3 scripts/pancake/expose-version.py
+      run: python3 scripts/pancake/expose_version.py
     
     - name: Configure
       run: make O=out ARCH=$ARCH $DEFCONFIG
@@ -92,4 +92,5 @@ jobs:
     - name: Post update to Telegram
       env:
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-      run: python3 scripts/pancake/telegram-post.py        
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      run: python3 scripts/pancake/telegram_post.py        
