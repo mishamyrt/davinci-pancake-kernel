@@ -87,7 +87,7 @@ jobs:
       uses: actions/upload-artifact@v1
       with:
         name: pancake-mishamyrt
-        path: out/pancake-mishamyrt.zip
+        path: anykernel/
 
     - name: Post update to Telegram
       env:
