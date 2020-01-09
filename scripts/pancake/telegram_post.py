@@ -3,7 +3,7 @@ import os
 from git import get_branch
 from os import rename
 from os.path import join
-from expose_version import format_local_version
+from formatters import format_local_version
 
 bot_token = os.environ['TELEGRAM_BOT_TOKEN']
 chat_id = os.environ['TELEGRAM_CHAT_ID']
