@@ -21,7 +21,7 @@ def get_commit_url (commit_sha: str) -> str:
 send_document_url = get_api_url('sendDocument') + '?chat_id=' + chat_id
 
 def generate_zip_name(branch: str) -> str:
-    return 'pancake' + format_local_version(branch) +  + '.zip'
+    return 'pancake' + format_local_version(branch) + '.zip'
 
 def get_caption(commit_sha: str) -> None:
     return 'Branch: `' + get_branch() + '`\n' +  '[Commit history](' + get_commit_url(commit_sha) + ')'
