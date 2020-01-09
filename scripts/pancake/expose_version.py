@@ -1,4 +1,4 @@
-from git import get_branch, get_commits
+from git import get_branch
 
 defconfig_path = 'arch/arm64/configs/vendor/davinci_defconfig'
 postfix_key = '%LOCAL_VERSION%'
