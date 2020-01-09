@@ -92,5 +92,5 @@ jobs:
     - name: Post update to Telegram
       env:
         TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        TELEGRAM_CHAT_ID: "-344877533"
       run: python3 scripts/pancake/telegram_post.py        
