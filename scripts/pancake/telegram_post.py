@@ -1,6 +1,6 @@
 import requests
 import os
-from git import get_branch, get_commits
+from git import get_branch
 from os import rename
 from os.path import join
 from expose_version import format_local_version
