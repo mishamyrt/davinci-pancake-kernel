@@ -10,6 +10,8 @@ env:
   GCC32_FOLDER: "toolchains/gcc32"
   DTBO_UTILS_FOLDER: "toolchains/dtbo"
   LLVM_FOLDER: "toolchains/llvm"
+  TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+  TELEGRAM_CHAT_ID: "-1001465816588"
 
 jobs:
   build:
@@ -17,6 +19,10 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v1
+
+    - name: Post build start
+      id: post_start
+      run: echo "##[set-output name=message_id;]$(python3 scripts/pancake/telegram_post.py start)"
 
     - name: Install system dependencies
       env:
@@ -70,6 +76,12 @@ jobs:
                               CROSS_COMPILE=aarch64-linux-android- \
                               CROSS_COMPILE_ARM32=arm-linux-androideabi-
 
+    - name: Post build failure
+      if: failure()
+      env:
+        MESSAGE_ID: ${{ steps.post_start.outputs.message_id }}
+      run: python3 scripts/pancake/telegram_post.py fail $MESSAGE_ID
+
     - name: Build DTBO
       run: |
         cd $DTBO_UTILS_FOLDER/src/
@@ -91,6 +103,5 @@ jobs:
 
     - name: Post update to Telegram
       env:
-        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-        TELEGRAM_CHAT_ID: "-1001465816588"
-      run: python3 scripts/pancake/telegram_post.py        
+        MESSAGE_ID: ${{ steps.post_start.outputs.message_id }}
+      run: python3 scripts/pancake/telegram_post.py success $MESSAGE_ID
