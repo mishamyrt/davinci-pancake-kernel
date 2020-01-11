@@ -29,6 +29,8 @@ echo 10 > /dev/blkio/background/blkio.weight
 
 sleep 2
 
+echo 8 > /dev/stune/schedtune.boost
+
 echo 1 > /sys/module/printk/parameters/console_suspend
 echo 3000 > /proc/sys/vm/dirty_expire_centisecs
 
