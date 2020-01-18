@@ -7,8 +7,16 @@ from os import rename
 from os.path import join
 from formatters import format_local_version, markdown_link
 
+branch = get_branch()
+
+def get_chat_id() -> str:
+    if 'private' in branch:
+        return '74076749'
+    else:
+        return os.environ['TELEGRAM_CHAT_ID']
+
 bot_token = os.environ['TELEGRAM_BOT_TOKEN']
-chat_id = os.environ['TELEGRAM_CHAT_ID']
+chat_id = get_chat_id()
 github_sha = os.environ['GITHUB_SHA']
 telegram_api_url = 'https://api.telegram.org/bot' + bot_token
 github_commit_url = 'https://github.com/mishamyrt/davinci-pancake-kernel/commit'
