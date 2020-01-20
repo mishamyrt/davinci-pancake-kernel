@@ -91,8 +91,6 @@ struct Node {
 	struct Node* children[ALPHABET_SIZE];
 };
 
-static struct Node root_node;
-
 static struct Node* create_node(void) {
 	struct Node* node = kmalloc(sizeof(struct Node), GFP_KERNEL);
 	int i;
@@ -103,42 +101,6 @@ static struct Node* create_node(void) {
 	}
 
 	return node;
-}
-
-static void insert_word(struct Node* from, const char* word, int length) {
-	int index;
-	int i;
-
-	for (i = 0; i < length; i++) {
-		index = word[i];
-		if (!from->children[index]) {
-			from->children[index] = create_node();
-		}
-
-		from = from->children[index];
-	}
-
-	from->is_word_end = 1;
-}
-
-static int search_word(struct Node* from, const char* word, int length) {
-	int index;
-	int i;
-
-	for (i = 0; i < length; i++) {
-		index = word[i];
-		if (!from->children[index]) {
-			return 0;
-		}
-
-		from = from->children[index];
-	}
-
-	if (!from) {
-		return 0;
-	}
-
-	return from->is_word_end;
 }
 
 bool task_is_sff(struct task_struct *p)
