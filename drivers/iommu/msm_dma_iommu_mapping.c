@@ -373,7 +373,7 @@ void msm_dma_unmap_sg_attrs(struct device *dev, struct scatterlist *sgl, int nen
 	kref_put(&meta->ref, msm_iommu_meta_destroy);
 	kref_put(&meta->ref, msm_iommu_meta_destroy);
 }
-EXPORT_SYMBOL(msm_dma_unmap_sg);
+EXPORT_SYMBOL(msm_dma_unmap_sg_attrs);
 
 static void msm_dma_unmap_list(struct list_head *unmap_list)
 {
