@@ -91,18 +91,6 @@ struct Node {
 	struct Node* children[ALPHABET_SIZE];
 };
 
-static struct Node* create_node(void) {
-	struct Node* node = kmalloc(sizeof(struct Node), GFP_KERNEL);
-	int i;
-
-	node->is_word_end = 0;
-	for (i = 0; i < ALPHABET_SIZE; i++) {
-		node->children[i] = NULL;
-	}
-
-	return node;
-}
-
 bool task_is_sff(struct task_struct *p)
 {
 	return p->signal == sff_sig;
