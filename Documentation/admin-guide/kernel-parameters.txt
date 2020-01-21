@@ -2131,9 +2131,6 @@
 			This tests the locking primitive's ability to
 			transition abruptly to and from idle.
 
-	locktorture.torture_runnable= [BOOT]
-			Start locktorture running at boot time.
-
 	locktorture.torture_type= [KNL]
 			Specify the locking implementation to test.
 
@@ -3645,9 +3642,6 @@
 			the same as for rcuperf.nreaders.
 			N, where N is the number of CPUs
 
-	rcuperf.perf_runnable= [BOOT]
-			Start rcuperf running at boot time.
-
 	rcuperf.perf_type= [KNL]
 			Specify the RCU implementation to test.
 
@@ -3735,8 +3729,8 @@
 			Set time (s) after boot for CPU-hotplug testing.
 
 	rcutorture.onoff_interval= [KNL]
-			Set time (s) between CPU-hotplug operations, or
-			zero to disable CPU-hotplug testing.
+			Set time (jiffies) between CPU-hotplug operations,
+			or zero to disable CPU-hotplug testing.
 
 	rcutorture.shuffle_interval= [KNL]
 			Set task-shuffle interval (s).  Shuffling tasks
@@ -3753,6 +3747,9 @@
 
 	rcutorture.stall_cpu_holdoff= [KNL]
 			Time to wait (s) after boot before inducing stall.
+
+	rcutorture.stall_cpu_irqsoff= [KNL]
+			Disable interrupts while stalling if set.
 
 	rcutorture.stat_interval= [KNL]
 			Time (s) between statistics printk()s.
@@ -3777,9 +3774,6 @@
 	rcutorture.test_no_idle_hz= [KNL]
 			Test RCU's dyntick-idle handling.  See also the
 			rcutorture.shuffle_interval parameter.
-
-	rcutorture.torture_runnable= [BOOT]
-			Start rcutorture running at boot time.
 
 	rcutorture.torture_type= [KNL]
 			Specify the RCU implementation to test.
