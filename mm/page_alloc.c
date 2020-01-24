@@ -4179,7 +4179,7 @@ retry:
 		goto retry_cpuset;
 
 	/* Boost when memory is low so allocation latency doesn't get too bad */
-	cpu_input_boost_kick_max(100);
+	cpu_input_boost_kick_max(200);
 
 	/* Reclaim has failed us, start killing things */
 	page = __alloc_pages_may_oom(gfp_mask, order, ac, &did_some_progress);
