@@ -9,7 +9,7 @@ def sha1(file: str) -> str:
 version = sys.argv[1]
 is_stable = sys.argv[2] == 'stable'
 
-host = 'pancake-'
+host = 'https://pancake-'
 host += 'kernel' if is_stable else 'develop'
 host += '.surge.sh'
 
