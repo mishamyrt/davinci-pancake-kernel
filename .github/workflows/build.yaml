@@ -106,7 +106,7 @@ jobs:
       env:
         SURGE_TOKEN: ${{ secrets.SURGE_TOKEN }}
       run: |
-        npm install --global surge
+        sudo npm install --global surge
         mkdir release
         cp ./out/pancake-mishamyrt.zip release/pancake.zip
         git log -n 50 --pretty=format:'* %s' > release/changelog.txt
