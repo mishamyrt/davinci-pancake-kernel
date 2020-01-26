@@ -38,5 +38,8 @@ echo 3000 > /proc/sys/vm/dirty_expire_centisecs
 echo 64 > /sys/block/sda/queue/read_ahead_kb
 echo 64 > /sys/block/sdf/queue/read_ahead_kb
 
+chmod 644 /sys/devices/system/cpu/cpu6/cpufreq/scaling_max_freq
+echo 2169600 > /sys/devices/system/cpu/cpu6/cpufreq/scaling_max_freq
+
 sysctl vm.dirty_ratio=7
 sysctl vm.dirty_background_ratio=3
