@@ -111,7 +111,7 @@ jobs:
         cp ./out/pancake-mishamyrt.zip release/pancake.zip
         git log -n 50 --pretty=format:'* %s' > release/changelog.txt
         python3 scripts/pancake/fkm-release.py $GITHUB_SHA develop
-        surg --project release/ -d https://pancake-develop.surge.sh --token $SURGE_TOKEN
+        surge --project release/ -d https://pancake-develop.surge.sh --token $SURGE_TOKEN
         
     - name: Post update to Telegram
       env:
