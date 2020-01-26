@@ -1,3 +1,5 @@
+import datetime
+
 develop_postfix = '-develop'
 
 def format_local_version (branch: str) -> str:
@@ -15,3 +17,6 @@ def format_local_version (branch: str) -> str:
 
 def markdown_link(text: str, url: str) -> str:
 	return '[' + text + '](' + url + ')'
+
+def today_iso() -> str:
+    return datetime.date.today().strftime("%Y-%m-%d")
