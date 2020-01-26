@@ -632,9 +632,6 @@ EXPORT_SYMBOL_GPL(of_css);
 			;						\
 		else
 
-static struct kmem_cache *cgrp_cset_pool;
-static struct kmem_cache *cgrp_cset_link_pool;
-
 /*
  * The default css_set - used by init and its children prior to any
  * hierarchies being mounted. It contains a pointer to the root state
@@ -829,13 +826,6 @@ static unsigned long css_set_hash(struct cgroup_subsys_state *css[])
 	return key;
 }
 
-static void __free_cset_rcu(struct rcu_head *head)
-{
-	struct css_set *cset = container_of(head, struct css_set, rcu_head);
-
-	kmem_cache_free(cgrp_cset_pool, cset);
-}
-
 void put_css_set_locked(struct css_set *cset)
 {
 	struct cgrp_cset_link *link, *tmp_link;
@@ -870,7 +860,7 @@ void put_css_set_locked(struct css_set *cset)
 		put_css_set_locked(cset->dom_cset);
 	}
 
-	call_rcu(&cset->rcu_head, __free_cset_rcu);
+	kfree_rcu(cset, rcu_head);
 }
 
 /**
@@ -1105,13 +1095,13 @@ static struct css_set *find_css_set(struct css_set *old_cset,
 	if (cset)
 		return cset;
 
-	cset = kmem_cache_zalloc(cgrp_cset_pool, GFP_KERNEL);
+	cset = kzalloc(sizeof(*cset), GFP_KERNEL);
 	if (!cset)
 		return NULL;
 
 	/* Allocate all the cgrp_cset_link objects that we'll need */
 	if (allocate_cgrp_cset_links(cgroup_root_count, &tmp_links) < 0) {
-		kmem_cache_free(cgrp_cset_pool, cset);
+		kfree(cset);
 		return NULL;
 	}
 
@@ -5350,9 +5340,6 @@ int __init cgroup_init(void)
 {
 	struct cgroup_subsys *ss;
 	int ssid;
-
-	cgrp_cset_link_pool = KMEM_CACHE(cgrp_cset_link, SLAB_HWCACHE_ALIGN | SLAB_PANIC);
-	cgrp_cset_pool = KMEM_CACHE(css_set, SLAB_HWCACHE_ALIGN | SLAB_PANIC);
 
 	BUILD_BUG_ON(CGROUP_SUBSYS_COUNT > 16);
 	BUG_ON(percpu_init_rwsem(&cgroup_threadgroup_rwsem));
