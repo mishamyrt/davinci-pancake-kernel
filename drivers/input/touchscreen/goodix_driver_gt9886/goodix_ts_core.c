@@ -26,6 +26,8 @@
 #include <linux/completion.h>
 #include <linux/debugfs.h>
 #include <linux/of_irq.h>
+#include <linux/cpu_input_boost.h>
+#include <linux/devfreq_boost.h>
 #ifdef CONFIG_DRM
 #include <linux/msm_drm_notify.h>
 #include <linux/notifier.h>
@@ -787,6 +789,11 @@ static int goodix_ts_input_report(struct input_dev *dev,
 	/*ts_info("get_event_now :0x%02x, pre_event : %d", get_event_now, pre_event);*/
 	if ((core_data->event_status & 0x88) == 0x88 && core_data->fod_status) {
 			input_report_key(core_data->input_dev, BTN_INFO, 1);
+            /* Boost CPU and DDR to the max for 150 ms when FOD is activated */
+            if (!core_data->fod_pressed) {
+                cpu_input_boost_kick_max(150);
+		        devfreq_boost_kick_max(DEVFREQ_MSM_CPUBW, 150);
+            }
 			/*input_report_key(core_data->input_dev, KEY_INFO, 1);*/
 			core_data->fod_pressed = true;
 			ts_info("BTN_INFO press");
