@@ -1,6 +1,14 @@
 name: build
 
-on: push
+on:
+  push:
+    branches: 
+    - 'ten'
+    - 'ten-develop'
+    - '**/**'
+    tags-ignore:
+      - 'v**'
+
 
 env:
   DEFCONFIG: "vendor/davinci_defconfig"
