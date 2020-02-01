@@ -110,7 +110,6 @@ jobs:
         path: anykernel/
     
     - name: Publish on surge
-      if: github.ref == 'refs/heads/ten-develop'
       env:
         SURGE_TOKEN: ${{ secrets.SURGE_TOKEN }}
       run: |
