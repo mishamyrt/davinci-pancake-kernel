@@ -1,6 +1,13 @@
 #!/system/bin/sh
 
 #
+# Set Vulkan HWUI renderer
+#
+
+setprop debug.hwui.renderer skiavk
+setprop ro.hwui.use_vulkan true
+
+#
 # Wait for /data to be mounted
 #
 
