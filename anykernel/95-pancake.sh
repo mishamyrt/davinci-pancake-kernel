@@ -48,8 +48,5 @@ echo 64 > /sys/block/sdf/queue/read_ahead_kb
 chmod 644 /sys/devices/system/cpu/cpu6/cpufreq/scaling_max_freq
 echo 2169600 > /sys/devices/system/cpu/cpu6/cpufreq/scaling_max_freq
 
-chmod 644 /sys/devices/platform/soc/5000000.qcom,kgsl-3d0/kgsl/kgsl-3d0/min_clock_mhz
-echo 267 > /sys/devices/platform/soc/5000000.qcom,kgsl-3d0/kgsl/kgsl-3d0/min_clock_mhz
-
 sysctl vm.dirty_ratio=7
 sysctl vm.dirty_background_ratio=3
