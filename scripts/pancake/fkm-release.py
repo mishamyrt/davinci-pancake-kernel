@@ -15,7 +15,7 @@ host += '.surge.sh'
 
 manifest = {
     'kernel': {
-        'name': 'Pancake Kernel unstable 🥞',
+        'name': 'Pancake Kernel 🥞 nightly',
         'version': version,
         'link': f'{host}/pancake.zip',
         'changelog_url': f'{host}/changelog.txt',
