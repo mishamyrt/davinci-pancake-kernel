@@ -767,8 +767,7 @@ __rmnet_map_segment_coal_skb(struct sk_buff *coal_skb,
 
 	/* Handle checksum status */
 	if (likely(csum_valid) || zero_csum) {
-		/* Set the partial checksum information */
-		rmnet_map_partial_csum(skbn, coal_meta);
+		skbn->ip_summed = CHECKSUM_UNNECESSARY;
 	} else if (check) {
 		/* Unfortunately, we have to fake a bad checksum here, since
 		 * the original bad value is lost by the hardware. The only
