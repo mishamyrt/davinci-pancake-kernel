@@ -23,7 +23,7 @@ manifest = {
         'date': today_iso()
     },
     'support': {
-        'link': 'https://t.me/pancake_kernel'
+        'link': 'https://github.com/mishamyrt/davinci-pancake-kernel/issues'
     }
 }
 
