@@ -29,6 +29,7 @@ echo 10 > /dev/blkio/background/blkio.weight
 
 sleep 2
 
+# Adjust stune boost
 echo 8 > /dev/stune/schedtune.boost
 
 echo 1 > /sys/module/printk/parameters/console_suspend
@@ -38,11 +39,18 @@ echo 3000 > /proc/sys/vm/dirty_expire_centisecs
 echo 64 > /sys/block/sda/queue/read_ahead_kb
 echo 64 > /sys/block/sdf/queue/read_ahead_kb
 
+# Disable exposure adjustment
+chmod 644 /sys/devices/platform/soc/soc:qcom,dsi-display/ea_enable
+echo 0 > /sys/devices/platform/soc/soc:qcom,dsi-display/ea_enable
+
+# Reduce CPU big cluster maximum frequency
 chmod 644 /sys/devices/system/cpu/cpu6/cpufreq/scaling_max_freq
 echo 2169600 > /sys/devices/system/cpu/cpu6/cpufreq/scaling_max_freq
 
+# Set GPU minimum frequency
 chmod 644 /sys/devices/platform/soc/5000000.qcom,kgsl-3d0/kgsl/kgsl-3d0/min_clock_mhz
 echo 267 > /sys/devices/platform/soc/5000000.qcom,kgsl-3d0/kgsl/kgsl-3d0/min_clock_mhz
 
+# Adjust dirty ratios
 sysctl vm.dirty_ratio=7
 sysctl vm.dirty_background_ratio=3
