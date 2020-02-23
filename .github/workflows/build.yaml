@@ -74,7 +74,7 @@ jobs:
 
     - name: Build kernel
       run: |
-        export LLVM_FINAL_FOLDER="${PWD}/${LLVM_FOLDER}/clang-r370808"
+        export LLVM_FINAL_FOLDER="${PWD}/${LLVM_FOLDER}/clang-r377782b"
         export LD_LIBRARY_PATH="${LLVM_FINAL_FOLDER}/lib64:${LLVM_FINAL_FOLDER}/lib:$LD_LIBRARY_PATH"
         PATH="${LLVM_FINAL_FOLDER}/bin:${PWD}/$GCC32_FOLDER/bin:${PWD}/$GCC64_FOLDER/bin:${PATH}" \
         make -j$(nproc --all) O=out \
