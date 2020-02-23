@@ -115,9 +115,10 @@ jobs:
       run: |
         sudo npm install --global surge
         mkdir release
+        export VERSION="$(date '+%Y-%m-%d-%H-%M')"
         cp ./out/pancake-mishamyrt.zip release/pancake.zip
         git log -n 50 --pretty=format:'* %s' > release/changelog.txt
-        python3 scripts/pancake/fkm-release.py $GITHUB_SHA develop
+        python3 scripts/pancake/fkm-release.py $VERSION develop
         surge --project release/ -d https://pancake-develop.surge.sh --token $SURGE_TOKEN
         
     - name: Post update to Telegram
