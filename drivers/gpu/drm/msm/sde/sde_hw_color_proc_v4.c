@@ -19,7 +19,7 @@ static unsigned short kcal_red = 255;
 static unsigned short kcal_green = 242;
 static unsigned short kcal_blue = 241;
 static unsigned short kcal_hue = 0;
-static unsigned short kcal_sat = 250;
+static unsigned short kcal_sat = 255;
 static unsigned short kcal_val = 256;
 static unsigned short kcal_cont = 255;
 
