@@ -19,7 +19,7 @@ env:
   DTBO_UTILS_FOLDER: "toolchains/dtbo"
   LLVM_FOLDER: "toolchains/llvm"
   TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-  TELEGRAM_CHAT_ID: "-1001465816588"
+  TELEGRAM_CHAT_ID: "-1001459714859"
 
 jobs:
   build:
