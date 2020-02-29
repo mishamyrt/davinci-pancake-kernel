@@ -38,17 +38,11 @@ echo 3000 > /proc/sys/vm/dirty_expire_centisecs
 # Set LKM minfree
 echo "18432,23040,27648,51256,150296,200640" > /sys/module/lowmemorykiller/parameters/minfree
 
-# Reduce I/O read-ahead to 64 KiB
-echo 64 > /sys/block/sda/queue/read_ahead_kb
-echo 64 > /sys/block/sdb/queue/read_ahead_kb
-echo 64 > /sys/block/sdc/queue/read_ahead_kb
-echo 64 > /sys/block/sdf/queue/read_ahead_kb
-
-# Reduce nr_requests to 64 (double queue depth)
-echo 64 > /sys/block/sda/queue/nr_requests
-echo 64 > /sys/block/sdb/queue/nr_requests
-echo 64 > /sys/block/sdc/queue/nr_requests
-echo 64 > /sys/block/sdf/queue/nr_requests
+# Setup I/O things
+find /sys/block/sd* | while read node; do
+    echo 64 > "$node/queue/read_ahead_kb"
+    echo 64 > "$node/queue/nr_requests"
+done
 
 # Disable exposure adjustment
 chmod 644 /sys/devices/platform/soc/soc:qcom,dsi-display/ea_enable
