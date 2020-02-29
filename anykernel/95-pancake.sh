@@ -35,6 +35,9 @@ echo 8 > /dev/stune/schedtune.boost
 echo 1 > /sys/module/printk/parameters/console_suspend
 echo 3000 > /proc/sys/vm/dirty_expire_centisecs
 
+# Set LKM minfree
+echo "18432,23040,27648,51256,150296,200640" > /sys/module/lowmemorykiller/parameters/minfree
+
 # Reduce I/O read-ahead to 64 KiB
 echo 64 > /sys/block/sda/queue/read_ahead_kb
 echo 64 > /sys/block/sdb/queue/read_ahead_kb
