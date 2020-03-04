@@ -1,0 +1,134 @@
+#!/bin/bash
+set -e
+
+if [ -z "$toolchain_path" ]
+then
+      echo "Toolchain path is not provided."
+      echo "Please set \$toolchain_path environment variable."
+      exit 1
+fi
+
+# Toolchain URLs
+gs="https://android.googlesource.com/platform"
+gs_prebuilts="$gs/prebuilts"
+gs_system="$gs/system"
+llvm_url="$gs_prebuilts/clang/host/linux-x86"
+gcc32_url="$gs_prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9"
+gcc64_url="$gs_prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9"
+libufdt_url="$gs_system/libufdt"
+
+# Toolchain paths
+gcc32_prefix="$toolchain_path/gcc32/bin/arm-linux-androideabi-"
+gcc64_prefix="$toolchain_path/gcc64/bin/aarch64-linux-android-"
+llvm_bin="$toolchain_path/llvm/clang-r377782b/bin"
+libufdt_bin="$toolchain_path/libufdt/utils/src"
+
+# Build variables
+arch="arm64"
+defconfig="davinci_defconfig"
+threads="$(getconf _NPROCESSORS_ONLN)"
+
+# Default kmake flags
+kmake_flags=(
+	-j"${threads}"
+	ARCH="$arch"
+	O="out"
+)
+
+# Main wrapper for all `make` functions
+kmake () {
+    make "${kmake_flags[@]}" "$@"
+}
+
+# Shallow clone helper
+get_repo () {
+    git clone -j"$threads" --depth=1 "$1" "$2"
+}
+
+# Download toolchain to $toolchain_path
+setup () {
+    get_repo "$libufdt_url" "$toolchain_path/libufdt"
+    get_repo "$llvm_url" "$toolchain_path/llvm"
+    get_repo "$gcc32_url" "$toolchain_path/gcc32"
+    get_repo "$gcc64_url" "$toolchain_path/gcc64"
+}
+
+pack () {
+    cp out/arch/arm64/boot/Image.gz anykernel/
+    cp out/arch/arm64/boot/dtbo.img anykernel/
+    cd anykernel/
+    zip -r9 pancake.zip * -x *placeholder
+    rm Image.gz
+    mv pancake.zip ../out/
+}
+
+configure () {
+    kmake "$defconfig"
+}
+
+get_local_version () {
+    branch="$(git rev-parse --abbrev-ref HEAD)"
+    local_version="${branch/feature\//}"
+    local_version="${local_version/upstream\//}"
+    local_version="${local_version/\//-}"
+    local_version="${local_version/ten/}"
+    local_version="${local_version/-develop/develop}"
+    if (("${#local_version}" > 0))
+    then
+        echo "-$local_version"
+    fi
+}
+
+build_dtbo () {
+    python \
+    "$libufdt_bin/mkdtboimg.py" create \
+    "out/arch/$arch/boot/dtbo.img" \
+    out/arch/$arch/boot/dts/qcom/*.dtbo
+}
+
+build () {
+    local_version=$(get_local_version)
+    sed -i "s/\"-Pancake\"/\"-Pancake$local_version\"/g" out/.config
+    kmake_flags+=(
+        CC="clang"
+        CLANG_TRIPLE="aarch64-linux-gnu-"
+        CROSS_COMPILE="$gcc64_prefix"
+        CROSS_COMPILE_ARM32="$gcc32_prefix"
+        AR="llvm-ar"
+        NM="llvm-nm"
+        OBJCOPY="llvm-objcopy"
+        OBJDUMP="llvm-objdump"
+        STRIP="llvm-strip"
+    )
+    kmake "$@"
+    build_dtbo
+}
+
+export PATH="$llvm_bin:$PATH"
+export LD_LIBRARY_PATH="$llvm_bin/../lib:$llvm_bin/../lib64:$LD_LIBRARY_PATH"
+
+mkdir -p "$toolchain_path"
+
+case "$1" in
+    setup)
+        setup
+        ;;
+    regenerate)
+        configure
+        cp -f out/.config "arch/$arch/configs/$defconfig"
+        ;;
+    build)
+        shift
+        build "$@"
+        ;;
+    configure)
+        configure
+        ;;
+    clear)
+        rm -rf out/
+        git checkout out/.gitignore
+        ;;
+    pack)
+        pack
+        ;;
+esac
