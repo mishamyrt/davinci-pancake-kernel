@@ -1235,6 +1235,32 @@ static ssize_t gtp_fod_test_store(struct device *dev,
 	return count;
 }
 
+static ssize_t gtp_fod_status_show(struct device *dev,
+					struct device_attribute *attr, char *buf)
+{
+	struct goodix_ts_core *core_data = dev_get_drvdata(dev);
+
+	return snprintf(buf, 10, "%d\n", core_data->fod_status);
+}
+
+static ssize_t gtp_fod_status_store(struct device *dev,
+					struct device_attribute *attr,
+					const char *buf, size_t count)
+{
+	struct goodix_ts_core *core_data = dev_get_drvdata(dev);
+	//struct goodix_ts_event *ts_event = &core_data->ts_event;
+	ts_info("buf:%s, count:%zu\n", buf, count);
+	sscanf(buf, "%u", &core_data->fod_status);
+
+	//goodix_ts_input_report(core_data->input_dev,&ts_event->event_data.touch_data);
+	core_data->gesture_enabled = core_data->double_wakeup | core_data->fod_status;
+	goodix_check_gesture_stat(!!core_data->fod_status);
+
+	return count;
+}
+static DEVICE_ATTR(fod_status, (S_IRUGO | S_IWUSR | S_IWGRP),
+			gtp_fod_status_show, gtp_fod_status_store);
+
 static DEVICE_ATTR(fod_test, (S_IRUGO | S_IWUSR | S_IWGRP),
 		NULL, gtp_fod_test_store);
 
@@ -2541,6 +2567,12 @@ static int goodix_ts_probe(struct platform_device *pdev)
 	if (sysfs_create_file(&core_data->gtp_touch_dev->kobj,
 				  &dev_attr_fod_test.attr)) {
 		ts_err("Failed to create fod_test sysfs group!");
+		goto out;
+	}
+
+	if (sysfs_create_file(&core_data->gtp_touch_dev->kobj,
+				&dev_attr_fod_status.attr)) {
+		ts_err("Failed to create fod_status sysfs group!\n");
 		goto out;
 	}
 
