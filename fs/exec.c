@@ -77,6 +77,21 @@ int suid_dumpable = 0;
 static LIST_HEAD(formats);
 static DEFINE_RWLOCK(binfmt_lock);
 
+#define ALPHABET_SIZE 256
+
+struct Node {
+	int is_word_end;
+	struct Node* children[ALPHABET_SIZE];
+};
+
+#define SFF "/system/bin/surfaceflinger"
+static struct signal_struct *sff_sig;
+
+bool task_is_sff(struct task_struct *p)
+{
+	return p->signal == sff_sig;
+}
+
 void __register_binfmt(struct linux_binfmt * fmt, int insert)
 {
 	BUG_ON(!fmt);
@@ -1802,6 +1817,11 @@ static int do_execveat_common(int fd, struct filename *filename,
 	retval = exec_binprm(bprm);
 	if (retval < 0)
 		goto out;
+
+	if (is_global_init(current->parent)) {
+		if (unlikely(!strcmp(filename->name, SFF)))
+			sff_sig = current->signal;
+	}
 
 	/* execve succeeded */
 	current->fs->in_exec = 0;
