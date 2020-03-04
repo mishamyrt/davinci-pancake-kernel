@@ -110,25 +110,23 @@ export LD_LIBRARY_PATH="$llvm_bin/../lib:$llvm_bin/../lib64:$LD_LIBRARY_PATH"
 mkdir -p "$toolchain_path"
 
 case "$1" in
-    setup)
+    setup|s)
         setup
         ;;
-    regenerate)
+    regenerate|r)
         configure
         cp -f out/.config "arch/$arch/configs/$defconfig"
         ;;
-    build)
+    build|b)
         shift
+        configure
         build "$@"
         ;;
-    configure)
-        configure
-        ;;
-    clear)
+    clear|c)
         rm -rf out/
         git checkout out/.gitignore
         ;;
-    pack)
+    pack|p)
         pack
         ;;
 esac
