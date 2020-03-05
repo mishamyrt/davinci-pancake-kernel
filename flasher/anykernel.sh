@@ -38,7 +38,7 @@ mountpoint -q /data && {
     # Install second-stage late init script
     mkdir -p /data/adb/service.d
     cp -f ./pancake.sh $postboot_script
-    chmod +x postboot_script
+    chmod +x $postboot_script
 } || ui_print 'Data is not mounted; some tweaks will be missing'
 
 ## AnyKernel install
