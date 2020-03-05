@@ -54,14 +54,17 @@ setup () {
     get_repo "$gcc64_url" "$toolchain_path/gcc64"
 }
 
+# Parse CLang version
 get_clang_version () {
     echo $($llvm_bin/clang --version | head -n 1 | perl -ne 'print $1 if  /clang version (.[\.0-9]+)/gs')
 }
 
+# Parse binutils version
 get_binutils_version () {
     echo $("$gcc64_prefix"ar --version | perl -ne 'print $1 if  /\(binutils-(.[^)]+)\)/gs')
 }
 
+# Create ZIP installer
 pack () {
     git checkout flasher/banner
     echo " " >> flasher/banner
@@ -74,10 +77,12 @@ pack () {
     zip -r9 ../out/pancake.zip *
 }
 
+# Generate build config
 configure () {
     kmake "$defconfig"
 }
 
+# Format kernel local version
 get_local_version () {
     local_version="${branch/feature\//}"
     local_version="${local_version/upstream\//}"
@@ -90,6 +95,7 @@ get_local_version () {
     fi
 }
 
+# Build separated dtbo.img
 build_dtbo () {
     python \
     "$libufdt_bin/mkdtboimg.py" create \
@@ -97,6 +103,7 @@ build_dtbo () {
     out/arch/$arch/boot/dts/qcom/*.dtbo
 }
 
+# Build kernel
 build () {
     echo "Building..."
     local_version=$(get_local_version)
