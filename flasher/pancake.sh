@@ -43,5 +43,9 @@ find /sys/block/sd* | while read node; do
     echo 64 > "$node/queue/read_ahead_kb"
 done
 
+# Set GPU minimum frequency
+chmod 644 /sys/devices/platform/soc/5000000.qcom,kgsl-3d0/kgsl/kgsl-3d0/min_clock_mhz
+echo 267 > /sys/devices/platform/soc/5000000.qcom,kgsl-3d0/kgsl/kgsl-3d0/min_clock_mhz
+
 # Set LKM minfree
 echo "18432,23040,27648,51256,150296,200640" > /sys/module/lowmemorykiller/parameters/minfree
