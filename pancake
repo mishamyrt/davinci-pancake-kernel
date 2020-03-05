@@ -126,6 +126,44 @@ build () {
     build_dtbo
 }
 
+publish () {
+    rm -rf release/
+    git checkout release/.gitignore
+    if [ -z "$surge_token" ]
+    then
+        echo "Surge token is not provided."
+        echo "Please set \$surge_token environment variable."
+        exit 1
+    fi
+    if [ -z "$surge_url" ]
+    then
+        echo "Surge URL is not provided."
+        echo "Please set \$surge_url environment variable."
+        exit 1
+    fi
+    cp out/pancake.zip release/
+    hash="$(sha1sum out/pancake.zip | cut -d' ' -f1)"
+
+    # Export latest 50 commits to changelog
+    git log -n 50 --pretty=format:'* %s' > release/changelog.txt
+    cat <<- EOF > release/index.html
+{
+    "kernel": {
+        "name": "Pancake Kernel 🥞 nightly",
+        "sha1": "$hash",
+        "link": "$surge_url/pancake.zip",
+        "version": "$(date '+%Y-%m-%d-%H-%M')",
+        "date": "$(date '+%Y-%m-%d')",
+        "changelog_url": "$surge_url/changelog.txt"
+    },
+    "support": {
+        "link": "https://github.com/mishamyrt/davinci-pancake-kernel/issues"
+    }
+}
+EOF
+    surge --project release/ -d "$surge_url" --token "$surge_token"
+}
+
 export PATH="$llvm_bin:$PATH"
 export LD_LIBRARY_PATH="$llvm_bin/../lib:$llvm_bin/../lib64:$LD_LIBRARY_PATH"
 
@@ -152,6 +190,9 @@ case "$1" in
         ;;
     pack|p)
         pack
+        ;;
+    publish|pb)
+        publish
         ;;
     master|m)
         configure

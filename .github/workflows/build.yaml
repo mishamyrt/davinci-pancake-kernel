@@ -32,15 +32,7 @@ jobs:
         sudo npm install --global surge
         echo "##[set-output name=toolchain_path;]$toolchain_path"
 
-    - name: Toolchain cache
-      id: cache
-      uses: actions/cache@v1
-      with:
-        path: ${{ steps.setup.outputs.toolchain_path }}
-        key: ${{ runner.os }}-${{ hashFiles('pancake') }}
-
     - name: Setup toolchain
-      if: steps.cache.outputs.cache-hit != 'true'
       env:
         toolchain_path: ${{ steps.setup.outputs.toolchain_path }}
       run: ./pancake setup
@@ -49,7 +41,6 @@ jobs:
       env:
         toolchain_path: ${{ steps.setup.outputs.toolchain_path }}
       run: ./pancake configure
-        
 
     - name: Build kernel
       env:
@@ -60,6 +51,13 @@ jobs:
       env: 
         toolchain_path: ${{ steps.setup.outputs.toolchain_path }}
       run: ./pancake pack
+
+    - name: Publish nightly build
+      env: 
+        toolchain_path: ${{ steps.setup.outputs.toolchain_path }}
+        surge_url: "https://pancake-develop.surge.sh"
+        surge_token:  ${{ secrets.SURGE_TOKEN }}
+      run: ./pancake publish
 
     - name: Upload installer
       uses: actions/upload-artifact@v1
