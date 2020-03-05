@@ -24,6 +24,10 @@ while [ "$(getprop sys.boot_completed)" != 1 ]; do
 	sleep 2
 done
 
+# Disable exposure adjustment
+chmod 644 /sys/devices/platform/soc/soc:qcom,dsi-display/ea_enable
+echo 0 > /sys/devices/platform/soc/soc:qcom,dsi-display/ea_enable
+
 # I/O tweaks
 echo 1000 > /dev/blkio/blkio.weight
 echo 10 > /dev/blkio/background/blkio.weight
