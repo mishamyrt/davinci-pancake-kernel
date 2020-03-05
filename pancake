@@ -143,7 +143,10 @@ case "$1" in
         shift
         build "$@"
         ;;
-    clear|c)
+    configure|c)
+        configure
+        ;;
+    clear|cc)
         rm -rf out/
         git checkout out/.gitignore
         ;;
