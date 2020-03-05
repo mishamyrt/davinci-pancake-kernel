@@ -121,7 +121,6 @@ case "$1" in
         ;;
     build|b)
         shift
-        configure
         build "$@"
         ;;
     clear|c)
@@ -131,4 +130,8 @@ case "$1" in
     pack|p)
         pack
         ;;
+    master|m)
+        configure
+        build
+        pack
 esac
