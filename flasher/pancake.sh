@@ -29,20 +29,19 @@ echo 10 > /dev/blkio/background/blkio.weight
 
 sleep 2
 
-# Adjust stune boost
+# I/O tweaks
 echo 8 > /dev/stune/schedtune.boost
-
 echo 1 > /sys/module/printk/parameters/console_suspend
 echo 3000 > /proc/sys/vm/dirty_expire_centisecs
-
-# Set LKM minfree
-echo "18432,23040,27648,51256,150296,200640" > /sys/module/lowmemorykiller/parameters/minfree
-
-# Setup I/O things
-find /sys/block/sd* | while read node; do
-    echo 64 > "$node/queue/read_ahead_kb"
-done
 
 # Adjust dirty ratios
 sysctl vm.dirty_ratio=7
 sysctl vm.dirty_background_ratio=3
+
+# Adjust readahead
+find /sys/block/sd* | while read node; do
+    echo 64 > "$node/queue/read_ahead_kb"
+done
+
+# Set LKM minfree
+echo "18432,23040,27648,51256,150296,200640" > /sys/module/lowmemorykiller/parameters/minfree
