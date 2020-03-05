@@ -48,5 +48,9 @@ done
 chmod 644 /sys/devices/platform/soc/5000000.qcom,kgsl-3d0/kgsl/kgsl-3d0/min_clock_mhz
 echo 267 > /sys/devices/platform/soc/5000000.qcom,kgsl-3d0/kgsl/kgsl-3d0/min_clock_mhz
 
+# Reduce CPU big cluster maximum frequency
+chmod 644 /sys/devices/system/cpu/cpu6/cpufreq/scaling_max_freq
+echo 2169600 > /sys/devices/system/cpu/cpu6/cpufreq/scaling_max_freq
+
 # Set LKM minfree
 echo "18432,23040,27648,51256,150296,200640" > /sys/module/lowmemorykiller/parameters/minfree
