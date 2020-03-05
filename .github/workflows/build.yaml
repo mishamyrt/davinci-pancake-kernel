@@ -32,11 +32,11 @@ jobs:
         sudo npm install --global surge
         echo "##[set-output name=toolchain_path;]$toolchain_path"
 
-    - name: Cache toolchain
+    - name: Toolchain cache
       id: cache
       uses: actions/cache@v1
       with:
-        path: ${{ runner.temp }}/toolchain
+        path: ${{ steps.setup.outputs.toolchain_path }}
         key: ${{ runner.os }}-${{ hashFiles('pancake') }}
 
     - name: Setup toolchain
