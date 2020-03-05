@@ -54,12 +54,10 @@ setup () {
 }
 
 pack () {
-    cp out/arch/arm64/boot/Image.gz anykernel/
-    cp out/arch/arm64/boot/dtbo.img anykernel/
-    cd anykernel/
-    zip -r9 pancake.zip * -x *placeholder
-    rm Image.gz
-    mv pancake.zip ../out/
+    cp -f out/arch/arm64/boot/{Image.gz,dtbo.img} flasher/
+    cd flasher/
+    rm -f pancake.zip
+    zip -r9 ../out/pancake.zip *
 }
 
 configure () {
