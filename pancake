@@ -175,7 +175,8 @@ case "$1" in
         ;;
     regenerate|r)
         configure
-        cp -f out/.config "arch/$arch/configs/$defconfig"
+        kmake savedefconfig
+        cp -f out/defconfig "arch/$arch/configs/$defconfig"
         ;;
     build|b)
         shift
