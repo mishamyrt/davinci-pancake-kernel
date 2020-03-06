@@ -15,6 +15,13 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
+    - name: Post build start
+      id: post_start
+      env:
+        telegram_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        telegram_chat_id: "-1001459714859"
+      run: echo "##[set-output name=message_id;]$(./pancake telegram start)"
+
     - name: Setup environment
       id: setup 
       env:
@@ -47,6 +54,14 @@ jobs:
         toolchain_path: ${{ steps.setup.outputs.toolchain_path }}
       run: ./pancake build
 
+    - name: Post build failure
+      if: failure()
+      env:
+        telegram_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        telegram_chat_id: "-1001459714859"
+        message_id: ${{ steps.post_start.outputs.message_id }}
+      run: ./pancake telegram fail $message_id
+
     - name: Pack installer
       env: 
         toolchain_path: ${{ steps.setup.outputs.toolchain_path }}
@@ -64,3 +79,10 @@ jobs:
       with:
         name: pancake
         path: flasher/
+
+    - name: Post update to Telegram
+      env:
+        telegram_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        telegram_chat_id: "-1001459714859"
+        message_id: ${{ steps.post_start.outputs.message_id }}
+      run: ./pancake telegram success $message_id
