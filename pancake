@@ -1,13 +1,6 @@
 #!/bin/bash
 set -e
 
-if [ -z "$toolchain_path" ]
-then
-      echo "Toolchain path is not provided."
-      echo "Please set \$toolchain_path environment variable."
-      exit 1
-fi
-
 # Toolchain URLs
 gs="https://android.googlesource.com/platform"
 gs_prebuilts="$gs/prebuilts"
@@ -35,6 +28,17 @@ kmake_flags=(
 	ARCH="$arch"
 	O="out"
 )
+
+check_toolchain () {
+    if [ -z "$toolchain_path" ]
+    then
+        echo "Toolchain path is not provided."
+        echo "Please set \$toolchain_path environment variable."
+        exit 1
+    else
+        mkdir -p "$toolchain_path"
+    fi
+}
 
 # Main wrapper for all `make` functions
 kmake () {
@@ -164,25 +168,58 @@ EOF
     surge --project release/ -d "$surge_url" --token "$surge_token"
 }
 
+telegram_post () {
+    telegram_flags=(
+        BRANCH="$branch"
+        TOKEN="$telegram_token"
+        CHAT_ID="$telegram_chat_id"
+        COMMIT="$(git rev-parse HEAD)"
+    )
+    case "$1" in
+        start)
+            export "${telegram_flags[@]}"
+            python3 telegram.py start
+            ;;
+        fail)
+            export "${telegram_flags[@]}"
+            python3 telegram.py fail $2
+            ;;
+        success)
+            local_version="$(get_local_version)"
+            zip_name="out/pancake$local_version.zip"
+            rm -f "$zip_name"
+            cp "out/pancake.zip" "$zip_name"
+            telegram_flags+=(
+                FILE_NAME="$zip_name"
+            )
+            export "${telegram_flags[@]}"
+            python3 telegram.py success $2
+            ;;
+    esac
+    
+}
+
 export PATH="$llvm_bin:$PATH"
 export LD_LIBRARY_PATH="$llvm_bin/../lib:$llvm_bin/../lib64:$LD_LIBRARY_PATH"
 
-mkdir -p "$toolchain_path"
-
 case "$1" in
     setup|s)
+        check_toolchain
         setup
         ;;
     regenerate|r)
+        check_toolchain
         configure
         kmake savedefconfig
         cp -f out/defconfig "arch/$arch/configs/$defconfig"
         ;;
     build|b)
+        check_toolchain
         shift
         build "$@"
         ;;
     configure|c)
+        check_toolchain
         configure
         ;;
     clear|cc)
@@ -195,7 +232,12 @@ case "$1" in
     publish|pb)
         publish
         ;;
+    telegram|tg)
+        shift
+        telegram_post "$@"
+        ;;
     master|m)
+        check_toolchain
         configure
         build
         pack
