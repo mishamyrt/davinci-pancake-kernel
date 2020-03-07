@@ -187,8 +187,10 @@ telegram_post () {
         success)
             local_version="$(get_local_version)"
             zip_name="out/pancake$local_version.zip"
-            rm -f "$zip_name"
-            cp "out/pancake.zip" "$zip_name"
+            old_zip_name="out/pancake.zip"
+            if [ "$zip_name" != "$old_zip_name" ]; then
+                cp -f "$old_zip_name" "$zip_name"
+            fi
             telegram_flags+=(
                 FILE_NAME="$zip_name"
             )
