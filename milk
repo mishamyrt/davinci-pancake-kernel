@@ -157,7 +157,7 @@ publish () {
     cat <<- EOF > release/index.html
 {
     "kernel": {
-        "name": "Milk Kernel 🥛 nightly",
+        "name": "Milk 🥛 nightly",
         "sha1": "$hash",
         "link": "$surge_url/milk.zip",
         "version": "$(date '+%Y-%m-%d-%H-%M')",
