@@ -14,7 +14,7 @@ surge_url="https://milk-kernel.surge.sh"
 # Toolchain paths
 gcc32_prefix="$toolchain_path/gcc32/bin/arm-linux-androideabi-"
 gcc64_prefix="$toolchain_path/gcc64/bin/aarch64-linux-android-"
-llvm_bin="$toolchain_path/llvm/clang-r377782b/bin"
+llvm_bin="$toolchain_path/llvm/clang-r377782c/bin"
 libufdt_bin="$toolchain_path/libufdt/utils/src"
 
 # Build variables
