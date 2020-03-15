@@ -22,7 +22,7 @@ arch="arm64"
 defconfig="vendor/davinci_user_defconfig"
 threads="$(getconf _NPROCESSORS_ONLN)"
 if (( $threads >= 8 )); then
-    threads=$((threads-1))
+    threads="7"
 fi
 branch="$(git rev-parse --abbrev-ref HEAD)"
 
