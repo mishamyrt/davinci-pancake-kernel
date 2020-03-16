@@ -20,7 +20,11 @@
 
 #include <linux/pmic-voter.h>
 
+#ifdef CONFIG_MACH_XIAOMI_F10
+#define NUM_MAX_CLIENTS		24
+#else
 #define NUM_MAX_CLIENTS		32
+#endif
 #define DEBUG_FORCE_CLIENT	"DEBUG_FORCE_CLIENT"
 
 static DEFINE_SPINLOCK(votable_list_slock);
@@ -113,6 +117,13 @@ static void vote_min(struct votable *votable, int client_id,
 			*eff_id = i;
 		}
 	}
+#ifdef CONFIG_MACH_XIAOMI_F10
+	if (strcmp(votable->name, "QG_WS") != 0) {
+			if(votable->votes[i].enabled)
+				pr_info("%s: val: %d\n", votable->client_strs[i],
+							votable->votes[i].value);
+	}
+#endif
 	if (*eff_id == -EINVAL)
 		*eff_res = -EINVAL;
 }
@@ -489,10 +500,19 @@ int vote(struct votable *votable, const char *client_str, bool enabled, int val)
 			|| (effective_result != votable->effective_result)) {
 		votable->effective_client_id = effective_id;
 		votable->effective_result = effective_result;
+#ifdef CONFIG_MACH_XIAOMI_F10
+		if (strcmp(votable->name, "QG_WS") != 0) {
+			pr_info("%s: current vote is now %d voted by %s,%d, previous voted %d\n",
+				votable->name, effective_result,
+				get_client_str(votable, effective_id),
+				effective_id, votable->effective_result);
+		}
+#else
 		pr_debug("%s: effective vote is now %d voted by %s,%d\n",
 			votable->name, effective_result,
 			get_client_str(votable, effective_id),
 			effective_id);
+#endif
 		if (votable->callback && !votable->force_active
 				&& (votable->override_result == -EINVAL))
 			rc = votable->callback(votable, votable->data,
