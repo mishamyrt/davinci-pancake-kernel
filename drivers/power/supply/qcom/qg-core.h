@@ -22,7 +22,7 @@ struct qg_batt_props {
 	int			vbatt_full_mv;
 	int			fastchg_curr_ma;
 	int			qg_profile_version;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	int			nom_cap_uah;
 #endif
 };

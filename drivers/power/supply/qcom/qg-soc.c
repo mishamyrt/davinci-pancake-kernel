@@ -32,7 +32,7 @@
 #define VBAT_LOW_HYST_UV			50000
 #define FULL_SOC				100
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 static int qg_delta_soc_interval_ms = 40000;
 #else
 static int qg_delta_soc_interval_ms = 20000;
@@ -46,7 +46,7 @@ module_param_named(
 	fvss_soc_interval_ms, qg_fvss_delta_soc_interval_ms, int, 0600
 );
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 static int qg_delta_soc_cold_interval_ms = 40000;
 #else
 static int qg_delta_soc_cold_interval_ms = 4000;
@@ -282,7 +282,7 @@ exit_soc_scale:
 	return sys_soc;
 }
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 #define HIG_SOC 		8000
 #define LOW_SOC 		1000
 #endif
@@ -299,7 +299,7 @@ int qg_adjust_sys_soc(struct qpnp_qg *chip)
 
 	if (chip->sys_soc == QG_MAX_SOC) {
 		soc = FULL_SOC;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		} else if (chip->sys_soc == QG_MAX_SOC) {
 			soc = FULL_SOC;
 		} else {
@@ -447,14 +447,14 @@ static bool maint_soc_timeout(struct qpnp_qg *chip)
 
 static void update_msoc(struct qpnp_qg *chip)
 {
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	int rc = 0, sdam_soc, batt_temp = 0, batt_cur = 0;
 #else
 	int rc = 0, sdam_soc, batt_temp = 0;
 #endif
 	bool input_present = is_input_present(chip);
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	rc = qg_get_battery_current(chip, &batt_cur);
 	if (rc < 0) {
 		pr_err("Failed to read BATT_CUR rc=%d\n", rc);
@@ -466,7 +466,7 @@ static void update_msoc(struct qpnp_qg *chip)
 			chip->msoc += chip->dt.delta_soc;
 	} else if (chip->catch_up_soc < chip->msoc) {
 		/* SOC dropped */
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		if (batt_cur > 0) {
 			chip->msoc -= chip->dt.delta_soc;
 		}

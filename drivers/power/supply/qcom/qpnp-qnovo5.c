@@ -135,7 +135,7 @@ struct qnovo {
 	int			usb_present;
 };
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 static int debug_mask = QG_DEBUG_STATUS | QG_DEBUG_IRQ;
 #else
 static int debug_mask;

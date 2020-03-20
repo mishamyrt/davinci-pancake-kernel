@@ -184,7 +184,7 @@ int smblib_icl_override(struct smb_charger *chg, enum icl_override_mode  mode)
 		icl_override = 0;
 		apsd_override = ICL_OVERRIDE_AFTER_APSD_BIT;
 		break;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	case SW_OVERRIDE_NO_CC_MODE:
 		usb51_mode = USBIN_MODE_CHG_BIT;
 		icl_override = 1;
@@ -726,7 +726,7 @@ int smblib_set_charge_param(struct smb_charger *chg,
 		return rc;
 	}
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	smblib_dbg(chg, PR_OEM, "%s = %d (0x%02x)\n",
 #else
 	smblib_dbg(chg, PR_REGISTER, "%s = %d (0x%02x)\n",
@@ -1093,7 +1093,7 @@ static const struct apsd_result *smblib_update_usb_type(struct smb_charger *chg)
 		chg->real_charger_type = POWER_SUPPLY_TYPE_USB_PD;
 	} else if (chg->qc3p5_detected) {
 		chg->real_charger_type = POWER_SUPPLY_TYPE_USB_HVDCP_3P5;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		chg->usb_psy_desc.type = POWER_SUPPLY_TYPE_USB_PD;
 #endif
 	} else {
@@ -1101,7 +1101,7 @@ static const struct apsd_result *smblib_update_usb_type(struct smb_charger *chg)
 		 * Update real charger type only if its not FLOAT
 		 * detected as as SDP
 		 */
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		if (!(apsd_result->pst == POWER_SUPPLY_TYPE_USB_FLOAT &&
 			chg->real_charger_type == POWER_SUPPLY_TYPE_USB)){
 			chg->real_charger_type = apsd_result->pst;
@@ -1335,7 +1335,7 @@ int smblib_rerun_apsd_if_required(struct smb_charger *chg)
 		return rc;
 	}
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	if (!val.intval || chg->fake_usb_insertion)
 #else
 	if (!val.intval)
@@ -1440,7 +1440,7 @@ int smblib_set_icl_current(struct smb_charger *chg, int icl_ua)
 	if (icl_ua == INT_MAX)
 		goto set_mode;
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	if ((chg->typec_mode == POWER_SUPPLY_TYPEC_NONE) && (chg->real_charger_type >= POWER_SUPPLY_TYPE_USB)) {
 		rc = smblib_set_charge_param(chg, &chg->param.usb_icl, icl_ua);
 		icl_override = SW_OVERRIDE_NO_CC_MODE;
@@ -1450,7 +1450,7 @@ int smblib_set_icl_current(struct smb_charger *chg, int icl_ua)
 
 	/* configure current */
 	if (chg->real_charger_type == POWER_SUPPLY_TYPE_USB
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		&& (icl_ua <= USBIN_500MA)
 #endif
 		&& (chg->typec_legacy
@@ -1467,7 +1467,7 @@ int smblib_set_icl_current(struct smb_charger *chg, int icl_ua)
 		 * current limit is 500mA or below for better accuracy; in case
 		 * of error, proceed to use USB high-current mode.
 		 */
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		if (icl_ua <= USBIN_100MA) {
 #else
 		if (icl_ua <= USBIN_500MA) {
@@ -1982,7 +1982,7 @@ static bool is_charging_paused(struct smb_charger *chg)
 	return val & CHARGING_PAUSE_CMD_BIT;
 }
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 static bool smblib_is_jeita_warm_charging(struct smb_charger *chg)
 {
 	union power_supply_propval pval = {0, };
@@ -2016,7 +2016,7 @@ int smblib_get_prop_batt_status(struct smb_charger *chg,
 				union power_supply_propval *val)
 {
 	union power_supply_propval pval = {0, };
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	bool usb_online;
 #else
 	bool usb_online, dc_online;
@@ -2057,7 +2057,7 @@ int smblib_get_prop_batt_status(struct smb_charger *chg,
 	}
 	usb_online = (bool)pval.intval;
 
-#ifndef CONFIG_MACH_XIAOMI_F10
+#ifndef CONFIG_MACH_XIAOMI
 	rc = smblib_get_prop_dc_online(chg, &pval);
 	if (rc < 0) {
 		smblib_err(chg, "Couldn't get dc online property rc=%d\n",
@@ -2075,7 +2075,7 @@ int smblib_get_prop_batt_status(struct smb_charger *chg,
 	}
 	stat = stat & BATTERY_CHARGER_STATUS_MASK;
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	if (!usb_online) {
 		val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
 		return rc;
@@ -2122,7 +2122,7 @@ int smblib_get_prop_batt_status(struct smb_charger *chg,
 		break;
 	case TERMINATE_CHARGE:
 	case INHIBIT_CHARGE:
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		if (POWER_SUPPLY_HEALTH_WARM == pval.intval
 			|| POWER_SUPPLY_HEALTH_OVERHEAT == pval.intval
 			|| pval.intval != 100)
@@ -2133,7 +2133,7 @@ int smblib_get_prop_batt_status(struct smb_charger *chg,
 		break;
 	case DISABLE_CHARGE:
 	case PAUSE_CHARGE:
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		/*
 		 * As from jeita status change, there is very short time not charging,
 		 * to improve user experience, we report charging at this moment.
@@ -2164,7 +2164,7 @@ int smblib_get_prop_batt_status(struct smb_charger *chg,
 		return 0;
 	}
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	rc = smblib_get_prop_batt_health(chg, &pval);
 	if (rc < 0)
 		smblib_err(chg, "Couldn't get batt health rc=%d\n", rc);
@@ -2388,7 +2388,7 @@ int smblib_get_prop_batt_charge_done(struct smb_charger *chg,
 	stat = stat & BATTERY_CHARGER_STATUS_MASK;
 	val->intval = (stat == TERMINATE_CHARGE);
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	/*  if charge is done, clear CHG_AWAKE_VOTER */
 	if (val->intval == 1)
 		vote(chg->awake_votable, CHG_AWAKE_VOTER, false, 0);
@@ -2406,7 +2406,7 @@ int smblib_set_prop_input_suspend(struct smb_charger *chg,
 {
 	int rc;
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	dump_stack();
 #endif
 
@@ -2453,7 +2453,7 @@ int smblib_set_prop_batt_status(struct smb_charger *chg,
 	return 0;
 }
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 static int smblib_therm_charging(struct smb_charger *chg)
 {
 	int thermal_icl_ua = 0;
@@ -2579,7 +2579,7 @@ static int smblib_therm_charging(struct smb_charger *chg)
 int smblib_set_prop_system_temp_level(struct smb_charger *chg,
 				const union power_supply_propval *val)
 {
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	int rc;
         union power_supply_propval batt_temp ={0,};
 #endif
@@ -2593,7 +2593,7 @@ int smblib_set_prop_system_temp_level(struct smb_charger *chg,
 	if (val->intval > chg->thermal_levels)
 		return -EINVAL;
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
         rc = smblib_get_prop_from_bms(chg,
                                         POWER_SUPPLY_PROP_TEMP, &batt_temp);
         if (rc < 0) {
@@ -2607,7 +2607,7 @@ int smblib_set_prop_system_temp_level(struct smb_charger *chg,
 #endif
 	chg->system_temp_level = val->intval;
 
-#ifndef CONFIG_MACH_XIAOMI_F10
+#ifndef CONFIG_MACH_XIAOMI
 	if (chg->system_temp_level == chg->thermal_levels)
 		return vote(chg->chg_disable_votable,
 			THERMAL_DAEMON_VOTER, true, 0);
@@ -2615,7 +2615,7 @@ int smblib_set_prop_system_temp_level(struct smb_charger *chg,
 
 	vote(chg->chg_disable_votable, THERMAL_DAEMON_VOTER, false, 0);
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	smblib_therm_charging(chg);
 #else
 	if (chg->system_temp_level == 0)
@@ -2776,7 +2776,7 @@ static void smblib_hvdcp_adaptive_voltage_change(struct smb_charger *chg)
 	u8 stat;
 
 	if (chg->real_charger_type == POWER_SUPPLY_TYPE_USB_HVDCP) {
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		if (chg->qc2_unsupported) {
 			smblib_hvdcp_set_fsw(chg, QC_5V_BIT);
 			power_supply_changed(chg->usb_main_psy);
@@ -2811,7 +2811,7 @@ int smblib_dp_dm(struct smb_charger *chg, int val)
 	union power_supply_propval pval;
 	u8 stat;
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	/* if raise_vbus work is running, ignore dp_dm pulses */
 	if (chg->raise_vbus_to_detect)
 		return rc;
@@ -2819,7 +2819,7 @@ int smblib_dp_dm(struct smb_charger *chg, int val)
 
 	switch (val) {
 	case POWER_SUPPLY_DP_DM_DP_PULSE:
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		/*
 		 * if hvdcp_opti wrongly send more than 30 dp pulse(11V) to smb5,
 		 * ignore them to allow maxium vbus as 11V, as charge pump do not
@@ -2851,7 +2851,7 @@ int smblib_dp_dm(struct smb_charger *chg, int val)
 
 		smblib_dbg(chg, PR_PARALLEL, "DP_DM_DP_PULSE rc=%d cnt=%d\n",
 				rc, chg->pulse_cnt);
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		/*
 		 * if use class_a qc, and slave ic is charge pump, should limit
 		 * maxium icl to 1.9A, as VBUS will raise to about 9V to 9.8V,
@@ -2873,7 +2873,7 @@ int smblib_dp_dm(struct smb_charger *chg, int val)
 			chg->pulse_cnt--;
 		smblib_dbg(chg, PR_PARALLEL, "DP_DM_DM_PULSE rc=%d cnt=%d\n",
 				rc, chg->pulse_cnt);
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		/*
 		 * if use class_a qc, and slave ic is charge pump, should restore
 		 * icl to 2.4A when charge pump is not working for class_a qc
@@ -2924,7 +2924,7 @@ int smblib_dp_dm(struct smb_charger *chg, int val)
 			pr_err("Failed to force 5V\n");
 		break;
 	case POWER_SUPPLY_DP_DM_FORCE_9V:
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		/* we use our own qc2 method to raise to 9V, so just return here */
 		return 0;
 
@@ -2956,13 +2956,13 @@ int smblib_dp_dm(struct smb_charger *chg, int val)
 		if (rc < 0)
 			pr_err("Failed to force 9V\n");
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		vote(chg->usb_icl_votable, SW_ICL_MAX_VOTER, true,
 				HVDCP2_CURRENT_UA);
 #endif
 		break;
 	case POWER_SUPPLY_DP_DM_FORCE_12V:
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		/* we use our own qc2 method to raise to 9V, so just return here */
 		return 0;
 
@@ -2994,7 +2994,7 @@ int smblib_dp_dm(struct smb_charger *chg, int val)
 		if (rc < 0)
 			pr_err("Failed to force 12V\n");
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		vote(chg->usb_icl_votable, SW_ICL_MAX_VOTER, true,
 				HVDCP2_CURRENT_UA);
 #endif
@@ -3540,7 +3540,7 @@ int smblib_get_prop_usb_online(struct smb_charger *chg,
 		return rc;
 	}
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	if (get_client_vote_locked(chg->usb_icl_votable, JEITA_VOTER) == 0) {
 		/* show online when JEITA_VOTER 0mA is vote to improve user experience */
 		val->intval = true;
@@ -3897,7 +3897,7 @@ static int smblib_get_prop_ufp_mode(struct smb_charger *chg)
 		break;
 	}
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	rc = smblib_read(chg, TYPE_C_SNK_DEBUG_ACC_STATUS_REG, &stat);
 	if (rc < 0) {
 		smblib_err(chg, "Couldn't read TYPE_C_STATUS_1 rc=%d\n", rc);
@@ -4343,7 +4343,7 @@ int smblib_get_prop_connector_health(struct smb_charger *chg)
 	return POWER_SUPPLY_HEALTH_COOL;
 }
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 #define HVDCP2_CURRENT_UA		1500000
 #define HVDCP_START_CURRENT_UA		1000000
 #endif
@@ -4387,7 +4387,7 @@ int smblib_set_prop_pd_current_max(struct smb_charger *chg,
 	return rc;
 }
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 #define SUSPEND_CURRENT_UA		2000
 #define FLOAT_CHARGER_UA		1000000
 #endif
@@ -4395,12 +4395,12 @@ static int smblib_handle_usb_current(struct smb_charger *chg,
 					int usb_current)
 {
 	int rc = 0, rp_ua, typec_mode;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	bool is_float = false;
 #endif
 	union power_supply_propval val = {0, };
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	if (chg->real_charger_type == POWER_SUPPLY_TYPE_USB_FLOAT
 			&& (usb_current == SUSPEND_CURRENT_UA))
 		is_float = true;
@@ -4418,7 +4418,7 @@ static int smblib_handle_usb_current(struct smb_charger *chg,
 		if (usb_current == -ETIMEDOUT) {
 #endif
 			/* we do not use USB500mA for float charger */
-#ifndef CONFIG_MACH_XIAOMI_F10
+#ifndef CONFIG_MACH_XIAOMI
 			if ((chg->float_cfg & FLOAT_OPTIONS_MASK)
 						== FORCE_FLOAT_SDP_CFG_BIT) {
 				/*
@@ -4444,7 +4444,7 @@ static int smblib_handle_usb_current(struct smb_charger *chg,
 				typec_mode = smblib_get_prop_typec_mode(chg);
 				rp_ua = get_rp_based_dcp_current(chg,
 								typec_mode);
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 				if (rp_ua == DCP_CURRENT_UA)
 					rp_ua = FLOAT_CHARGER_UA;
 #endif
@@ -4466,7 +4466,7 @@ static int smblib_handle_usb_current(struct smb_charger *chg,
 			 * real_charger_type
 			 */
 			chg->real_charger_type = POWER_SUPPLY_TYPE_USB;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 			chg->usb_psy_desc.type = POWER_SUPPLY_TYPE_USB;
 #endif
 			rc = vote(chg->usb_icl_votable, USB_PSY_VOTER,
@@ -4520,7 +4520,7 @@ int smblib_set_prop_sdp_current_max(struct smb_charger *chg,
 		}
 
 		/* handle the request only when USB is present */
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		if (pval.intval && (val->intval != 0))
 #else
 		if (pval.intval)
@@ -4537,7 +4537,7 @@ int smblib_set_prop_sdp_current_max(struct smb_charger *chg,
 	return rc;
 }
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 int smblib_get_prop_type_recheck(struct smb_charger *chg,
 				    union power_supply_propval *val)
 {
@@ -4839,12 +4839,12 @@ int smblib_set_prop_pd_active(struct smb_charger *chg,
 			if (rc < 0)
 				dev_err(chg->dev, "Couldn't enable secondary charger rc=%d\n",
 					rc);
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 			else
 				chg->cp_reason = POWER_SUPPLY_CP_PPS;
 #endif
 		}
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		smblib_therm_charging(chg);
 #endif
 	} else {
@@ -5105,7 +5105,7 @@ int smblib_get_charge_current(struct smb_charger *chg,
 
 	typec_source_rd = smblib_get_prop_ufp_mode(chg);
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	/* QC 3.0 adapter */
 	if (apsd_result->bit & QC_3P0_BIT) {
 		*total_current_ua = HVDCP_CURRENT_UA;
@@ -5370,7 +5370,7 @@ irqreturn_t usbin_uv_irq_handler(int irq, void *data)
 	int rc;
 	u8 stat = 0, max_pulses = 0;
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	smblib_dbg(chg, PR_OEM, "IRQ: %s\n", irq_data->name);
 #else
 	smblib_dbg(chg, PR_INTERRUPT, "IRQ: %s\n", irq_data->name);
@@ -5447,7 +5447,7 @@ unsuspend_input:
 
 	/* Workaround for non-QC2.0-compliant chargers follows */
 	if (!chg->qc2_unsupported_voltage &&
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 			!chg->qc2_unsupported &&
 #endif
 			apsd->pst == POWER_SUPPLY_TYPE_USB_HVDCP) {
@@ -5496,7 +5496,7 @@ unsuspend_input:
 
 		smblib_rerun_apsd(chg);
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		pr_info("qc2_unsupported charger detected\n");
 		rc = smblib_force_vbus_voltage(chg, FORCE_5V_BIT);
 		if (rc < 0)
@@ -5567,7 +5567,7 @@ irqreturn_t icl_change_irq_handler(int irq, void *data)
 	return IRQ_HANDLED;
 }
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 static void smblib_cc_un_compliant_charge_work(struct work_struct *work)
 {
 	union power_supply_propval val = {0, };
@@ -5629,7 +5629,7 @@ void smblib_usb_plugin_hard_reset_locked(struct smb_charger *chg)
 	vbus_rising = (bool)(stat & USBIN_PLUGIN_RT_STS_BIT);
 
 	if (vbus_rising) {
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		/* hold chg_awake wakeup source when charger is present */
 		vote(chg->awake_votable, CHG_AWAKE_VOTER, true, 0);
 #endif
@@ -5650,7 +5650,7 @@ void smblib_usb_plugin_hard_reset_locked(struct smb_charger *chg)
 			}
 		}
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		cancel_delayed_work_sync(&chg->charger_type_recheck);
 		chg->recheck_charger = false;
 		chg->precheck_charger_type = POWER_SUPPLY_TYPE_UNKNOWN;
@@ -5672,7 +5672,7 @@ void smblib_usb_plugin_hard_reset_locked(struct smb_charger *chg)
 	}
 
 	power_supply_changed(chg->usb_psy);
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	smblib_dbg(chg, PR_OEM, "IRQ: usbin-plugin %s\n",
 #else
 	smblib_dbg(chg, PR_INTERRUPT, "IRQ: usbin-plugin %s\n",
@@ -5700,7 +5700,7 @@ void smblib_usb_plugin_locked(struct smb_charger *chg)
 						chg->chg_freq.freq_removal);
 
 	if (vbus_rising) {
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		/* hold a wakeup source when charger is present */
 		vote(chg->awake_votable, CHG_AWAKE_VOTER, true, 0);
 #endif
@@ -5724,7 +5724,7 @@ void smblib_usb_plugin_locked(struct smb_charger *chg)
 		vote(chg->awake_votable, PL_DELAY_VOTER, true, 0);
 		schedule_delayed_work(&chg->pl_enable_work,
 					msecs_to_jiffies(PL_DELAY_MS));
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		schedule_delayed_work(&chg->charger_type_recheck,
 					msecs_to_jiffies(CHARGER_RECHECK_DELAY_MS));
 		schedule_delayed_work(&chg->cc_un_compliant_charge_work,
@@ -5789,7 +5789,7 @@ void smblib_usb_plugin_locked(struct smb_charger *chg)
 		if (rc < 0)
 			smblib_err(chg, "Couldn't disable DPDM rc=%d\n", rc);
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		if (chg->cc_un_compliant_detected) {
 			/* disable apsd if cc_un_compliant detected after plug out */
 			//smblib_apsd_enable(chg, false);
@@ -5816,7 +5816,7 @@ void smblib_usb_plugin_locked(struct smb_charger *chg)
 	power_supply_changed(chg->usb_psy);
 	if (chg->dual_role)
 		dual_role_instance_changed(chg->dual_role);
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	smblib_dbg(chg, PR_OEM, "IRQ: usbin-plugin %s\n",
 #else
 	smblib_dbg(chg, PR_INTERRUPT, "IRQ: usbin-plugin %s\n",
@@ -5851,7 +5851,7 @@ static void smblib_handle_sdp_enumeration_done(struct smb_charger *chg,
 		   rising ? "rising" : "falling");
 }
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 static void smblib_raise_qc3_vbus_work(struct work_struct *work)
 {
 	union power_supply_propval val = {0, };
@@ -5946,7 +5946,7 @@ static void smblib_handle_hvdcp_3p0_auth_done(struct smb_charger *chg,
 	if (apsd_result->bit & QC_3P0_BIT) {
 		/* for QC3, switch to CP if present */
 		if (chg->sec_cp_present) {
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		if (!chg->qc_class_ab) {
 			rc = smblib_select_sec_charger(chg, POWER_SUPPLY_CHARGER_SEC_CP,
 						POWER_SUPPLY_CP_HVDCP3, false);
@@ -6010,7 +6010,7 @@ static void smblib_handle_hvdcp_check_timeout(struct smb_charger *chg,
 					CHARGER_TYPE_VOTER, false, 0);
 			vote(chg->hdc_irq_disable_votable,
 					CHARGER_TYPE_VOTER, false, 0);
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 			if (!chg->raise_vbus_to_detect) {
 				if (chg->is_qc_class_a)
 					vote(chg->usb_icl_votable, SW_ICL_MAX_VOTER, true,
@@ -6050,7 +6050,7 @@ static void update_sw_icl_max(struct smb_charger *chg, int pst)
 {
 	int typec_mode;
 	int rp_ua;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	union power_supply_propval val = {0, };
 #endif
 
@@ -6081,7 +6081,7 @@ static void update_sw_icl_max(struct smb_charger *chg, int pst)
 	/* rp-std or legacy, USB BC 1.2 */
 	switch (pst) {
 	case POWER_SUPPLY_TYPE_USB:
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	smblib_get_prop_usb_present(chg, &val);
 #endif
 		/*
@@ -6094,7 +6094,7 @@ static void update_sw_icl_max(struct smb_charger *chg, int pst)
 			vote(chg->usb_icl_votable, USB_PSY_VOTER, true,
 					is_flash_active(chg) ?
 					SDP_CURRENT_UA : SDP_100_MA);
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 			vote(chg->usb_icl_votable, SW_ICL_MAX_VOTER, false, 0);
 		} else if ((chg->typec_mode == POWER_SUPPLY_TYPEC_NONE) && (val.intval == true))
 			vote(chg->usb_icl_votable, SW_ICL_MAX_VOTER, true, SDP_CURRENT_UA);
@@ -6106,7 +6106,7 @@ static void update_sw_icl_max(struct smb_charger *chg, int pst)
 #endif
 		break;
 	case POWER_SUPPLY_TYPE_USB_CDP:
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		if (is_client_vote_enabled(chg->usb_icl_votable,	USB_PSY_VOTER))
 			vote(chg->usb_icl_votable, USB_PSY_VOTER, false, 0);
 #endif
@@ -6118,7 +6118,7 @@ static void update_sw_icl_max(struct smb_charger *chg, int pst)
 		vote(chg->usb_icl_votable, SW_ICL_MAX_VOTER, true, rp_ua);
 		break;
 	case POWER_SUPPLY_TYPE_USB_FLOAT:
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		if (is_client_vote_enabled(chg->usb_icl_votable,
 							USB_PSY_VOTER))
 			vote(chg->usb_icl_votable, USB_PSY_VOTER, false, 0);
@@ -6127,7 +6127,7 @@ static void update_sw_icl_max(struct smb_charger *chg, int pst)
 		 * limit ICL to 100mA, the USB driver will enumerate to check
 		 * if this is a SDP and appropriately set the current
 		 */
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		if (!chg->recheck_charger)
 			vote(chg->usb_icl_votable, SW_ICL_MAX_VOTER, true,
 						SDP_100_MA);
@@ -6147,7 +6147,7 @@ static void update_sw_icl_max(struct smb_charger *chg, int pst)
 	}
 }
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 static void determine_thermal_current(struct smb_charger *chg)
 {
 	if (chg->system_temp_level > 0
@@ -6186,7 +6186,7 @@ static void smblib_handle_apsd_done(struct smb_charger *chg, bool rising)
 		break;
 	}
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	determine_thermal_current(chg);
 	smblib_dbg(chg, PR_OEM, "IRQ: apsd-done rising; %s detected\n",
 #else
@@ -6211,7 +6211,7 @@ irqreturn_t usb_source_change_irq_handler(int irq, void *data)
 		smblib_err(chg, "Couldn't read APSD_STATUS rc=%d\n", rc);
 		return IRQ_HANDLED;
 	}
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	smblib_dbg(chg, PR_OEM, "APSD_STATUS = 0x%02x\n", stat);
 #else
 	smblib_dbg(chg, PR_INTERRUPT, "APSD_STATUS = 0x%02x\n", stat);
@@ -6259,7 +6259,7 @@ irqreturn_t usb_source_change_irq_handler(int irq, void *data)
 		smblib_err(chg, "Couldn't read APSD_STATUS rc=%d\n", rc);
 		return IRQ_HANDLED;
 	}
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	smblib_dbg(chg, PR_OEM, "APSD_STATUS = 0x%02x\n", stat);
 #else
 	smblib_dbg(chg, PR_INTERRUPT, "APSD_STATUS = 0x%02x\n", stat);
@@ -6453,7 +6453,7 @@ static void typec_src_removal(struct smb_charger *chg)
 			"Couldn't disable secondary charger rc=%d\n", rc);
 
 	chg->qc3p5_detected = false;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	chg->snk_debug_acc_detected = false;
 #endif
 	typec_src_fault_condition_cfg(chg, false);
@@ -6472,7 +6472,7 @@ static void typec_src_removal(struct smb_charger *chg)
 	}
 
 	cancel_delayed_work_sync(&chg->pl_enable_work);
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	cancel_delayed_work_sync(&chg->raise_qc3_vbus_work);
 #endif
 
@@ -6501,7 +6501,7 @@ static void typec_src_removal(struct smb_charger *chg)
 	vote(chg->pl_enable_votable_indirect, USBIN_V_VOTER, false, 0);
 	vote(chg->awake_votable, PL_DELAY_VOTER, false, 0);
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	/* reset our own voters */
 	vote(chg->awake_votable, CHG_AWAKE_VOTER, false, 0);
 	vote(chg->fcc_votable, CLASSA_QC_FCC_VOTER, false, 0);
@@ -6586,7 +6586,7 @@ static void typec_src_removal(struct smb_charger *chg)
 
 	del_timer_sync(&chg->apsd_timer);
 	chg->apsd_ext_timeout = false;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	chg->detect_low_power_qc3_charger = false;
 	chg->raise_vbus_to_detect = false;
 	chg->is_qc_class_a = false;
@@ -6714,7 +6714,7 @@ irqreturn_t typec_state_change_irq_handler(int irq, void *data)
 		smblib_handle_rp_change(chg, typec_mode);
 	chg->typec_mode = typec_mode;
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	smblib_dbg(chg, PR_OEM, "IRQ: cc-state-change; Type-C %s detected\n",
 #else
 	smblib_dbg(chg, PR_INTERRUPT, "IRQ: cc-state-change; Type-C %s detected\n",
@@ -7496,7 +7496,7 @@ static void smblib_icl_change_work(struct work_struct *work)
 
 	power_supply_changed(chg->usb_main_psy);
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	smblib_dbg(chg, PR_OEM, "icl_settled=%d\n", settled_ua);
 #else
 	smblib_dbg(chg, PR_INTERRUPT, "icl_settled=%d\n", settled_ua);
@@ -7708,7 +7708,7 @@ static void smblib_chg_termination_work(struct work_struct *work)
 		if (rc < 0)
 			goto out;
 	}
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	/*
 	 * In BSM a sudden jump in CC_SOC is not expected. If seen, its a
 	 * good_ocv or updated capacity, reject it.
@@ -8169,7 +8169,7 @@ static void smblib_dual_role_check_work(struct work_struct *work)
 	vote(chg->awake_votable, DR_SWAP_VOTER, false, 0);
 }
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 static void smblib_charger_type_recheck(struct work_struct *work)
 {
 	struct smb_charger *chg = container_of(work, struct smb_charger,
@@ -8406,7 +8406,7 @@ int smblib_init(struct smb_charger *chg)
 	INIT_DELAYED_WORK(&chg->bb_removal_work, smblib_bb_removal_work);
 	INIT_DELAYED_WORK(&chg->lpd_ra_open_work, smblib_lpd_ra_open_work);
 	INIT_DELAYED_WORK(&chg->lpd_detach_work, smblib_lpd_detach_work);
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	INIT_DELAYED_WORK(&chg->raise_qc3_vbus_work, smblib_raise_qc3_vbus_work);
 	INIT_DELAYED_WORK(&chg->charger_type_recheck, smblib_charger_type_recheck);
 	INIT_DELAYED_WORK(&chg->cc_un_compliant_charge_work, smblib_cc_un_compliant_charge_work);
@@ -8570,7 +8570,7 @@ int smblib_deinit(struct smb_charger *chg)
 		cancel_delayed_work_sync(&chg->bb_removal_work);
 		cancel_delayed_work_sync(&chg->lpd_ra_open_work);
 		cancel_delayed_work_sync(&chg->lpd_detach_work);
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		cancel_delayed_work_sync(&chg->raise_qc3_vbus_work);
 		cancel_delayed_work_sync(&chg->charger_type_recheck);
 		cancel_delayed_work_sync(&chg->cc_un_compliant_charge_work);

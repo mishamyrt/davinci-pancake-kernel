@@ -32,7 +32,7 @@ enum print_reason {
 	PR_PARALLEL	= BIT(3),
 	PR_OTG		= BIT(4),
 	PR_WLS		= BIT(5),
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	PR_OEM		= BIT(6),
 #endif
 };
@@ -67,7 +67,7 @@ enum print_reason {
 #define PL_FCC_LOW_VOTER		"PL_FCC_LOW_VOTER"
 #define WBC_VOTER			"WBC_VOTER"
 #define HW_LIMIT_VOTER			"HW_LIMIT_VOTER"
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 #define CHG_AWAKE_VOTER		"CHG_AWAKE_VOTER"
 #endif
 #define PL_SMB_EN_VOTER			"PL_SMB_EN_VOTER"
@@ -78,7 +78,7 @@ enum print_reason {
 #define JEITA_ARB_VOTER			"JEITA_ARB_VOTER"
 #define MOISTURE_VOTER			"MOISTURE_VOTER"
 #define HVDCP2_ICL_VOTER		"HVDCP2_ICL_VOTER"
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 #define CHG_TERMINATION_VOTER		"CHG_TERMINATION_VOTER"
 #define CLASSA_QC_FCC_VOTER			"CLASSA_QC_FCC_VOTER"
 #define QC_A_CP_ICL_MAX_VOTER		"QC_A_CP_ICL_MAX_VOTER"
@@ -98,14 +98,14 @@ enum print_reason {
 #define MAIN_FCC_VOTER			"MAIN_FCC_VOTER"
 #define DCIN_AICL_VOTER			"DCIN_AICL_VOTER"
 #define OVERHEAT_LIMIT_VOTER		"OVERHEAT_LIMIT_VOTER"
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 #define QC2_UNSUPPORTED_VOTER		"QC2_UNSUPPORTED_VOTER"
 #endif
 
 #define BOOST_BACK_STORM_COUNT	3
 #define WEAK_CHG_STORM_COUNT	8
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 /* defined for distinguish qc class_a and class_b */
 #define VOL_THR_FOR_QC_CLASS_AB		12500000
 #define QC_CLASS_A_CURRENT_UA		3600000
@@ -154,7 +154,7 @@ enum print_reason {
 #define SDP_100_MA			100000
 #define SDP_CURRENT_UA			500000
 #define CDP_CURRENT_UA			1500000
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 #define DCP_CURRENT_UA			1600000
 #else
 #define DCP_CURRENT_UA			1500000
@@ -169,7 +169,7 @@ enum print_reason {
 
 #define ROLE_REVERSAL_DELAY_MS		2000
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 enum hvdcp3_type {
 	HVDCP3_NONE = 0,
 	HVDCP3_CLASSA_18W,
@@ -365,7 +365,7 @@ enum icl_override_mode {
 	SW_OVERRIDE_USB51_MODE,
 	/* ICL other than USB51 */
 	SW_OVERRIDE_HC_MODE,
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	SW_OVERRIDE_NO_CC_MODE
 #endif
 };
@@ -474,7 +474,7 @@ struct smb_charger {
 	struct power_supply		*usb_psy;
 	struct power_supply		*dc_psy;
 	struct power_supply		*bms_psy;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	struct power_supply_desc   usb_psy_desc;
 #endif
 	struct power_supply		*usb_main_psy;
@@ -531,12 +531,12 @@ struct smb_charger {
 	struct delayed_work	pl_enable_work;
 	struct delayed_work	uusb_otg_work;
 	struct delayed_work	bb_removal_work;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	struct delayed_work	raise_qc3_vbus_work;
 #endif
 	struct delayed_work	lpd_ra_open_work;
 	struct delayed_work	lpd_detach_work;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	struct delayed_work	charger_type_recheck;
 	struct delayed_work	cc_un_compliant_charge_work;
 #endif
@@ -577,7 +577,7 @@ struct smb_charger {
 	int			boost_threshold_ua;
 	int			system_temp_level;
 	int			thermal_levels;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	int 		*thermal_mitigation_dcp;
 	int 		*thermal_mitigation_qc2;
 	int 		*thermal_mitigation_pd_base;
@@ -594,7 +594,7 @@ struct smb_charger {
 	bool			step_chg_enabled;
 	bool			sw_jeita_enabled;
 	bool			typec_legacy_use_rp_icl;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	bool            dynamic_fv_enabled;
 #endif
 	bool			is_hdc;
@@ -669,11 +669,11 @@ struct smb_charger {
 	int			boost_current_ua;
 	int                     qc2_max_pulses;
 	enum qc2_non_comp_voltage qc2_unsupported_voltage;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	bool			fake_usb_insertion;
 #endif
 	bool			dbc_usbov;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	bool			qc2_unsupported;
 #endif
 
@@ -690,7 +690,7 @@ struct smb_charger {
 	int			die_health;
 	int			connector_health;
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	/* raise qc3 vbus flag */
 	bool			qc_class_ab;
 	bool			is_qc_class_a;
@@ -711,7 +711,7 @@ struct smb_charger {
 	int			dcin_uv_count;
 	ktime_t			dcin_uv_last_time;
 	int			last_wls_vout;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	/* charger type recheck */
 	int			recheck_charger;
 	int			precheck_charger_type;
@@ -919,7 +919,7 @@ int smblib_configure_hvdcp_apsd(struct smb_charger *chg, bool enable);
 int smblib_icl_override(struct smb_charger *chg, enum icl_override_mode mode);
 enum alarmtimer_restart smblib_lpd_recheck_timer(struct alarm *alarm,
 				ktime_t time);
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 int smblib_set_prop_type_recheck(struct smb_charger *chg,
 				 const union power_supply_propval *val);
 int smblib_get_prop_type_recheck(struct smb_charger *chg,

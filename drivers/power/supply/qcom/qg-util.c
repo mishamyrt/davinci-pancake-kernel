@@ -398,7 +398,7 @@ int qg_get_battery_current(struct qpnp_qg *chip, int *ibat_ua)
 
 	last_ibat = sign_extend32(last_ibat, 15);
 	*ibat_ua = qg_iraw_to_ua(chip, last_ibat);
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	if (*ibat_ua < 0)
 		chip->sdam_data[SDAM_IBAT_UA] = 0;
 	else

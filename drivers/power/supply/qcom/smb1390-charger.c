@@ -343,7 +343,7 @@ static ssize_t stat2_show(struct class *c, struct class_attribute *attr,
 }
 static CLASS_ATTR_RO(stat2);
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 static ssize_t model_name_show(struct class *c, struct class_attribute *attr,
 			char *buf)
 {
@@ -485,7 +485,7 @@ static struct attribute *cp_class_attrs[] = {
 	&class_attr_toggle_switcher.attr,
 	&class_attr_die_temp.attr,
 	&class_attr_isns.attr,
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	&class_attr_model_name.attr,
 #endif
 	NULL,

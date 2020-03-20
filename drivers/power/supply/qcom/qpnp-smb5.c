@@ -233,7 +233,7 @@ struct smb5 {
 	struct smb_dt_props	dt;
 };
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 static int __debug_mask = PR_MISC | PR_PARALLEL | PR_OTG | PR_WLS | PR_OEM;
 #else
 static int __debug_mask;
@@ -265,7 +265,7 @@ static const struct clamp_config clamp_levels[] = {
 };
 
 #define PMI632_MAX_ICL_UA	3000000
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 #define PM6150_MAX_FCC_UA	3500000
 #else
 #define PM6150_MAX_FCC_UA	3000000
@@ -400,7 +400,7 @@ static int smb5_configure_internal_pull(struct smb_charger *chg, int type,
 #define DEFAULT_WD_SNARL_TIME_8S		0x07
 #define DEFAULT_FCC_STEP_SIZE_UA		100000
 #define DEFAULT_FCC_STEP_UPDATE_DELAY_MS	1000
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 #define MICRO_1P8A_FOR_DCP		1800000
 #endif
 
@@ -434,7 +434,7 @@ static int smb5_parse_dt(struct smb5 *chip)
 	chg->sw_jeita_enabled = of_property_read_bool(node,
 				"qcom,sw-jeita-enable");
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	chg->qc_class_ab = of_property_read_bool(node,
 				"qcom,distinguish-qc-class-ab");
 #endif
@@ -443,7 +443,7 @@ static int smb5_parse_dt(struct smb5 *chip)
 
 	chg->lpd_disabled = of_property_read_bool(node, "qcom,lpd-disable");
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	chg->dynamic_fv_enabled = of_property_read_bool(node,
 				"qcom,dynamic-fv-enable");
 #endif
@@ -495,7 +495,7 @@ static int smb5_parse_dt(struct smb5 *chip)
 		rc = of_property_read_u32(node, "qcom,chg-term-base-current-ma",
 				&chip->dt.term_current_thresh_lo_ma);
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	if (of_find_property(node, "qcom,thermal-mitigation-dcp", &byte_len)) {
 		chg->thermal_mitigation_dcp = devm_kzalloc(chg->dev, byte_len,
 			GFP_KERNEL);
@@ -699,7 +699,7 @@ static int smb5_parse_dt(struct smb5 *chip)
 		return -EINVAL;
 	}
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	chg->dcp_icl_ua = MICRO_1P8A_FOR_DCP;
 #else
 	chg->dcp_icl_ua = chip->dt.usb_icl_ua;
@@ -871,7 +871,7 @@ static enum power_supply_property smb5_usb_props[] = {
 	POWER_SUPPLY_PROP_CTM_CURRENT_MAX,
 	POWER_SUPPLY_PROP_HW_CURRENT_MAX,
 	POWER_SUPPLY_PROP_REAL_TYPE,
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	POWER_SUPPLY_PROP_HVDCP3_TYPE,
 #endif
 	POWER_SUPPLY_PROP_PD_VOLTAGE_MAX,
@@ -893,7 +893,7 @@ static enum power_supply_property smb5_usb_props[] = {
 	POWER_SUPPLY_PROP_SKIN_HEALTH,
 	POWER_SUPPLY_PROP_APSD_RERUN,
 	POWER_SUPPLY_PROP_APSD_TIMEOUT,
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	POWER_SUPPLY_PROP_TYPE_RECHECK,
 #endif
 };
@@ -954,7 +954,7 @@ static int smb5_usb_get_prop(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_REAL_TYPE:
 		val->intval = chg->real_charger_type;
 		break;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	case POWER_SUPPLY_PROP_HVDCP3_TYPE:
 		if (chg->real_charger_type != POWER_SUPPLY_TYPE_USB_HVDCP_3)
 			val->intval = HVDCP3_NONE; /* 0: none hvdcp3 insert */
@@ -1091,7 +1091,7 @@ static int smb5_usb_get_prop(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_APSD_TIMEOUT:
 		val->intval = chg->apsd_ext_timeout;
 		break;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	case POWER_SUPPLY_PROP_TYPE_RECHECK:
 		rc = smblib_get_prop_type_recheck(chg, val);
 		break;
@@ -1190,7 +1190,7 @@ static int smb5_usb_set_prop(struct power_supply *psy,
 		chg->apsd_ext_timeout = false;
 		smblib_rerun_apsd(chg);
 		break;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	case POWER_SUPPLY_PROP_TYPE_RECHECK:
 		rc = smblib_set_prop_type_recheck(chg, val);
 		break;
@@ -1237,14 +1237,14 @@ static int smb5_init_usb_psy(struct smb5 *chip)
 	struct power_supply_config usb_cfg = {};
 	struct smb_charger *chg = &chip->chg;
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	chg->usb_psy_desc = usb_psy_desc;
 #endif
 	usb_cfg.drv_data = chip;
 	usb_cfg.of_node = chg->dev->of_node;
 	chg->usb_psy = devm_power_supply_register(chg->dev,
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 						  &chg->usb_psy_desc,
 #else
 						  &usb_psy_desc,
@@ -1759,7 +1759,7 @@ static enum power_supply_property smb5_batt_props[] = {
 	POWER_SUPPLY_PROP_TECHNOLOGY,
 	POWER_SUPPLY_PROP_STEP_CHARGING_ENABLED,
 	POWER_SUPPLY_PROP_SW_JEITA_ENABLED,
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	POWER_SUPPLY_PROP_DYNAMIC_FV_ENABLED,
 #endif
 	POWER_SUPPLY_PROP_CHARGE_DONE,
@@ -1826,7 +1826,7 @@ static int smb5_batt_get_prop(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_SW_JEITA_ENABLED:
 		val->intval = chg->sw_jeita_enabled;
 		break;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	case POWER_SUPPLY_PROP_DYNAMIC_FV_ENABLED:
 		val->intval = chg->dynamic_fv_enabled;
 		break;
@@ -1836,7 +1836,7 @@ static int smb5_batt_get_prop(struct power_supply *psy,
 				POWER_SUPPLY_PROP_VOLTAGE_NOW, val);
 		break;
 	case POWER_SUPPLY_PROP_VOLTAGE_MAX:
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		val->intval = get_effective_result_locked(chg->fv_votable);
 #else
 		val->intval = get_client_vote(chg->fv_votable,
@@ -1850,7 +1850,7 @@ static int smb5_batt_get_prop(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_CURRENT_NOW:
 		rc = smblib_get_prop_from_bms(chg,
 				POWER_SUPPLY_PROP_CURRENT_NOW, val);
-#ifndef CONFIG_MACH_XIAOMI_F10
+#ifndef CONFIG_MACH_XIAOMI
 		if (!rc)
 			val->intval *= (-1);
 #endif
@@ -1877,7 +1877,7 @@ static int smb5_batt_get_prop(struct power_supply *psy,
 						POWER_SUPPLY_PROP_TEMP, val);
 		break;
 	case POWER_SUPPLY_PROP_TECHNOLOGY:
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		val->intval = POWER_SUPPLY_TECHNOLOGY_LIPO;
 #else
 		val->intval = POWER_SUPPLY_TECHNOLOGY_LION;
@@ -1977,7 +1977,7 @@ static int smb5_batt_set_prop(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_STEP_CHARGING_ENABLED:
 		chg->step_chg_enabled = !!val->intval;
 		break;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	case POWER_SUPPLY_PROP_DYNAMIC_FV_ENABLED:
 		chg->dynamic_fv_enabled = !!val->intval;
 		break;
@@ -2057,7 +2057,7 @@ static int smb5_batt_prop_is_writeable(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMITED:
 	case POWER_SUPPLY_PROP_STEP_CHARGING_ENABLED:
 	case POWER_SUPPLY_PROP_DIE_HEALTH:
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	case POWER_SUPPLY_PROP_VOLTAGE_MAX:
 #endif
 		return 1;
@@ -2604,7 +2604,7 @@ static int smb5_configure_iterm_thresholds_adc(struct smb5 *chip)
 					max_limit_ma);
 		raw_hi_thresh = sign_extend32(raw_hi_thresh, 15);
 		buf = (u8 *)&raw_hi_thresh;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		rc = smblib_write(chg, CHGR_ADC_ITERM_UP_THD_MSB_REG,
 					buf[1]);
 		if (rc < 0) {
@@ -2911,7 +2911,7 @@ static int smb5_init_hw(struct smb5 *chip)
 	vote(chg->fcc_votable,
 		BATT_PROFILE_VOTER, chg->batt_profile_fcc_ua > 0,
 		chg->batt_profile_fcc_ua);
-#ifndef CONFIG_MACH_XIAOMI_F10
+#ifndef CONFIG_MACH_XIAOMI
 	vote(chg->fv_votable,
 		BATT_PROFILE_VOTER, chg->batt_profile_fv_uv > 0,
 		chg->batt_profile_fv_uv);
@@ -2925,7 +2925,7 @@ static int smb5_init_hw(struct smb5 *chip)
 	rc = smb5_init_dc_peripheral(chg);
 	if (rc < 0)
 		return rc;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	// Operate the QC2.0 in 5V/9V mode i.e. Disable 12V
 	rc = smblib_masked_write(chg, HVDCP_PULSE_COUNT_MAX_REG,
 				 PULSE_COUNT_QC2P0_12V | PULSE_COUNT_QC2P0_9V,
@@ -3201,7 +3201,7 @@ static int smb5_init_hw(struct smb5 *chip)
 		}
 	}
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	/*
 	 * 1. set 0x154a bit2 to 1 to fix huawei scp cable 3A for SDP issue
 	 * 2. set 0x154a bit3 to 0 to enable AICL for debug access mode cable

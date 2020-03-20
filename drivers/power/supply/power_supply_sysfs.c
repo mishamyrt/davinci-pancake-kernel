@@ -164,7 +164,7 @@ static ssize_t power_supply_show_property(struct device *dev,
 
 	if (off == POWER_SUPPLY_PROP_CHARGE_COUNTER_EXT)
 		return sprintf(buf, "%lld\n", value.int64val);
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	else if (off == POWER_SUPPLY_PROP_TYPE_RECHECK)
 		return scnprintf(buf, PAGE_SIZE, "0x%x\n",
 				value.intval);
@@ -300,7 +300,7 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(charge_enabled),
 	POWER_SUPPLY_ATTR(set_ship_mode),
 	POWER_SUPPLY_ATTR(real_type),
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	POWER_SUPPLY_ATTR(hvdcp3_type),
 #endif
 	POWER_SUPPLY_ATTR(charge_now_raw),
@@ -377,7 +377,7 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(cc_step),
 	POWER_SUPPLY_ATTR(cc_step_sel),
 	POWER_SUPPLY_ATTR(sw_jeita_enabled),
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	POWER_SUPPLY_ATTR(dynamic_fv_enabled),
 #endif
 	POWER_SUPPLY_ATTR(pd_voltage_max),
@@ -418,13 +418,10 @@ static struct device_attribute power_supply_attrs[] = {
 	POWER_SUPPLY_ATTR(force_main_fcc),
 	POWER_SUPPLY_ATTR(comp_clamp_level),
 	POWER_SUPPLY_ATTR(adapter_cc_mode),
-#ifdef CONFIG_MACH_XIAOMI_F10
-	POWER_SUPPLY_ATTR(real_capacity),
-#endif
 	POWER_SUPPLY_ATTR(skin_health),
 	POWER_SUPPLY_ATTR(apsd_rerun),
 	POWER_SUPPLY_ATTR(apsd_timeout),
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	POWER_SUPPLY_ATTR(type_recheck),
 #endif
 	/* Charge pump properties */

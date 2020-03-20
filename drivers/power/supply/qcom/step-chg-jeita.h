@@ -13,7 +13,7 @@
 #ifndef __STEP_CHG_H__
 #define __STEP_CHG_H__
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 #define MAX_STEP_CHG_ENTRIES	5
 #else
 #define MAX_STEP_CHG_ENTRIES	8

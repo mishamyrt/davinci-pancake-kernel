@@ -42,7 +42,7 @@
 #include "qg-battery-profile.h"
 #include "qg-defs.h"
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 static int qg_debug_mask = QG_DEBUG_PON | QG_DEBUG_PROFILE | QG_DEBUG_SOC | QG_DEBUG_STATUS;
 #else
 static int qg_debug_mask;
@@ -1136,7 +1136,7 @@ static void process_udata_work(struct work_struct *work)
 {
 	struct qpnp_qg *chip = container_of(work,
 			struct qpnp_qg, udata_work);
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	int rc, batt_temp = 0;
 #else
 	int rc;
@@ -1196,19 +1196,19 @@ static void process_udata_work(struct work_struct *work)
 	if (!chip->dt.esr_disable)
 		qg_store_esr_params(chip);
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	rc = qg_get_battery_temp(chip, &batt_temp);
 	if ((batt_temp > 600) && is_batt_available(chip))
 		power_supply_changed(chip->batt_psy);
 #endif
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	qg_dbg(chip, QG_DEBUG_STATUS, "udata update: batt_soc=%d cc_soc=%d full_soc=%d qg_esr=%d batt_temp=%d\n",
 #else
 	qg_dbg(chip, QG_DEBUG_STATUS, "udata update: batt_soc=%d cc_soc=%d full_soc=%d qg_esr=%d\n",
 #endif
 		(chip->batt_soc != INT_MIN) ? chip->batt_soc : -EINVAL,
 		(chip->cc_soc != INT_MIN) ? chip->cc_soc : -EINVAL,
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		chip->full_soc, chip->esr_last, batt_temp);
 #else
 		chip->full_soc, chip->esr_last);
@@ -2064,7 +2064,7 @@ static int qg_psy_set_property(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_BATT_AGE_LEVEL:
 		rc = qg_setprop_batt_age_level(chip, pval->intval);
 		break;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	case POWER_SUPPLY_PROP_VOLTAGE_MAX:
 		chip->bp.float_volt_uv = pval->intval;
 		break;
@@ -2154,7 +2154,7 @@ static int qg_psy_get_property(struct power_supply *psy,
 			pval->intval = (int)temp;
 		break;
 	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		if (-EINVAL != chip->bp.nom_cap_uah) {
 			pval->intval = chip->bp.nom_cap_uah * 1000;
 		} else {
@@ -2233,7 +2233,7 @@ static int qg_property_is_writeable(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_SOH:
 	case POWER_SUPPLY_PROP_FG_RESET:
 	case POWER_SUPPLY_PROP_BATT_AGE_LEVEL:
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	case POWER_SUPPLY_PROP_VOLTAGE_MAX:
 #endif
 		return 1;
@@ -2331,7 +2331,7 @@ static int qg_charge_full_update(struct qpnp_qg *chip)
 			/* terminated in JEITA */
 			qg_dbg(chip, QG_DEBUG_STATUS, "Terminated charging @ msoc=%d\n",
 					chip->msoc);
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		} else if (health == POWER_SUPPLY_HEALTH_GOOD && chip->msoc <= recharge_soc) {
 			bool usb_present = is_usb_present(chip);
 
@@ -3010,7 +3010,7 @@ static int qg_load_battery_profile(struct qpnp_qg *chip)
 	chip->bp.fastchg_curr_ma = min(chip->max_fcc_limit_ma,
 					chip->bp.fastchg_curr_ma);
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	rc = of_property_read_u32(profile_node, "qcom,nom-batt-capacity-mah",
 			&chip->bp.nom_cap_uah);
 	if (rc < 0) {
@@ -3133,7 +3133,7 @@ static struct ocv_all ocv[] = {
 	[SDAM_PON_OCV] = { 0, 0, "SDAM_PON_OCV"},
 };
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 static bool qg_is_usb_present(struct qpnp_qg *chip)
 {
 	int rc;
@@ -3153,18 +3153,18 @@ static int qg_determine_pon_soc(struct qpnp_qg *chip)
 	int rc = 0, batt_temp = 0, i, shutdown_temp = 0;
 	bool use_pon_ocv = true;
 	unsigned long rtc_sec = 0;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	u32 ocv_uv = 0, soc = 0, pon_soc = 0, full_soc = 0, cutoff_soc = 0, calcualte_soc = 0;
 #else
 	u32 ocv_uv = 0, soc = 0, pon_soc = 0, full_soc = 0, cutoff_soc = 0;
 #endif
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	u32 shutdown[SDAM_MAX] = {0};
 #else
 	u32 shutdown[SDAM_MAX] = {0}, soc_raw = 0;
 #endif
 	char ocv_type[20] = "NONE";
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	int state = 0;
 	bool input_present = qg_is_usb_present(chip);
 #endif
@@ -3225,7 +3225,7 @@ static int qg_determine_pon_soc(struct qpnp_qg *chip)
 	 * 2. The device was powered off for < ignore_shutdown_time
 	 * 2. Batt temp has not changed more than shutdown_temp_diff
 	 */
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	if (!shutdown[SDAM_VALID]) {
 		pr_err("SDAM_VALID\n");
 		goto use_pon_ocv;
@@ -3338,7 +3338,7 @@ use_pon_ocv:
 			goto done;
 		}
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		if ((full_soc > cutoff_soc) && (pon_soc > cutoff_soc))
 			calcualte_soc = DIV_ROUND_UP(((pon_soc - cutoff_soc) * 100),
 						(full_soc - cutoff_soc));
@@ -3385,7 +3385,7 @@ done:
 		return rc;
 	}
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	chip->sdam_data[SDAM_IBAT_UA] = 0;
 #else
 	chip->cc_soc = chip->sys_soc = soc_raw;
@@ -3940,7 +3940,7 @@ static int qg_alg_init(struct qpnp_qg *chip)
 #define DEFAULT_CL_MAX_LIM_DECIPERC	100
 #define DEFAULT_CL_DELTA_BATT_SOC	10
 #define DEFAULT_CL_WT_START_SOC		15
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 #define DEFAULT_SHUTDOWN_TEMP_DIFF	50	/* 5 degC */
 #else
 #define DEFAULT_SHUTDOWN_TEMP_DIFF	60	/* 6 degC */

@@ -22,7 +22,7 @@
 
 #define STEP_CHG_VOTER		"STEP_CHG_VOTER"
 #define JEITA_VOTER		"JEITA_VOTER"
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 #define DYNAMIC_FV_VOTER	"DYNAMIC_FV_VOTER"
 #endif
 
@@ -47,7 +47,7 @@ struct jeita_fv_cfg {
 	struct range_data		fv_cfg[MAX_STEP_CHG_ENTRIES];
 };
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 struct dynamic_fv_cfg {
 	char			*prop_name;
 	struct range_data	fv_cfg[MAX_STEP_CHG_ENTRIES];
@@ -58,19 +58,19 @@ struct step_chg_info {
 	struct device		*dev;
 	ktime_t			step_last_update_time;
 	ktime_t			jeita_last_update_time;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	ktime_t			dynamic_fv_last_update_time;
 #endif
 	bool			step_chg_enable;
 	bool			sw_jeita_enable;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	bool			dynamic_fv_enable;
 #endif
 	bool			jeita_arb_en;
 	bool			config_is_read;
 	bool			step_chg_cfg_valid;
 	bool			sw_jeita_cfg_valid;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	bool			dynamic_fv_cfg_valid;
 #endif
 	bool			soc_based_step_chg;
@@ -80,7 +80,7 @@ struct step_chg_info {
 	bool			taper_fcc;
 	int			jeita_fcc_index;
 	int			jeita_fv_index;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	int			dynamic_fv_index;
 #endif
 	int			step_index;
@@ -89,7 +89,7 @@ struct step_chg_info {
 	struct step_chg_cfg	*step_chg_config;
 	struct jeita_fcc_cfg	*jeita_fcc_config;
 	struct jeita_fv_cfg	*jeita_fv_config;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	struct dynamic_fv_cfg	*dynamic_fv_config;
 #endif
 
@@ -385,7 +385,7 @@ static int get_step_chg_jeita_setting_from_profile(struct step_chg_info *chip)
 		chip->sw_jeita_cfg_valid = false;
 	}
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	chip->dynamic_fv_cfg_valid = true;
 	rc = read_range_data_from_node(profile_node,
 			"qcom,dynamic-fv-ranges",
@@ -438,7 +438,7 @@ static void get_config_work(struct work_struct *work)
 			chip->jeita_fv_config->fv_cfg[i].low_threshold,
 			chip->jeita_fv_config->fv_cfg[i].high_threshold,
 			chip->jeita_fv_config->fv_cfg[i].value);
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	for (i = 0; i < MAX_STEP_CHG_ENTRIES; i++)
 		pr_debug("dynamic-fv-cfg: %d(count) ~ %d(coutn), %duV\n",
 			chip->dynamic_fv_config->fv_cfg[i].low_threshold,
@@ -498,7 +498,7 @@ static int get_val(struct range_data *range, int hysteresis, int current_index,
 		}
 
 		*new_index = (i - 1);
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		*val = range[*new_index].value;
 	}
 
@@ -669,7 +669,7 @@ update_time:
 	return 0;
 }
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 static int handle_dynamic_fv(struct step_chg_info *chip)
 {
 	union power_supply_propval pval = {0, };
@@ -831,7 +831,7 @@ static int handle_jeita(struct step_chg_info *chip)
 	if (!chip->usb_icl_votable)
 		goto set_jeita_fv;
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	pr_err("%s = %d FCC = %duA FV = %duV\n",
 		chip->jeita_fcc_config->param.prop_name, pval.intval, fcc_ua, fv_uv);
 #endif
@@ -850,7 +850,7 @@ static int handle_jeita(struct step_chg_info *chip)
 	 * Suspend USB input path if battery voltage is above
 	 * JEITA VFLOAT threshold.
 	 */
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	/* if (chip->jeita_arb_en && fv_uv > 0) { */
 	if (fv_uv > 0) {
 #else
@@ -892,7 +892,7 @@ static int handle_battery_insertion(struct step_chg_info *chip)
 		if (chip->batt_missing) {
 			chip->step_chg_cfg_valid = false;
 			chip->sw_jeita_cfg_valid = false;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 			chip->dynamic_fv_cfg_valid = false;
 #endif
 			chip->get_config_retry_count = 0;
@@ -914,7 +914,7 @@ static void status_change_work(struct work_struct *work)
 	struct step_chg_info *chip = container_of(work,
 			struct step_chg_info, status_change_work.work);
 	int rc = 0;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	int reschedule_dynamic_fv_work_us = 0;
 #endif
 	union power_supply_propval prop = {0, };
@@ -929,7 +929,7 @@ static void status_change_work(struct work_struct *work)
 	if (rc < 0)
 		pr_err("Couldn't handle sw jeita rc = %d\n", rc);
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	rc = handle_dynamic_fv(chip);
 	if (rc > 0)
 		reschedule_dynamic_fv_work_us = rc;
@@ -1022,7 +1022,7 @@ int qcom_step_chg_init(struct device *dev,
 	chip->step_index = -EINVAL;
 	chip->jeita_fcc_index = -EINVAL;
 	chip->jeita_fv_index = -EINVAL;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	chip->dynamic_fv_index = -EINVAL;
 #endif
 
@@ -1039,7 +1039,7 @@ int qcom_step_chg_init(struct device *dev,
 			sizeof(struct jeita_fcc_cfg), GFP_KERNEL);
 	chip->jeita_fv_config = devm_kzalloc(dev,
 			sizeof(struct jeita_fv_cfg), GFP_KERNEL);
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	chip->dynamic_fv_config = devm_kzalloc(dev,
 			sizeof(struct dynamic_fv_cfg), GFP_KERNEL);
 	if (!chip->jeita_fcc_config || !chip->jeita_fv_config || !chip->dynamic_fv_config)
@@ -1050,14 +1050,14 @@ int qcom_step_chg_init(struct device *dev,
 
 	chip->jeita_fcc_config->param.psy_prop = POWER_SUPPLY_PROP_TEMP;
 	chip->jeita_fcc_config->param.prop_name = "BATT_TEMP";
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	chip->jeita_fcc_config->param.hysteresis = 5;
 #else
 	chip->jeita_fcc_config->param.hysteresis = 10;
 #endif
 	chip->jeita_fv_config->param.psy_prop = POWER_SUPPLY_PROP_TEMP;
 	chip->jeita_fv_config->param.prop_name = "BATT_TEMP";
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	chip->jeita_fv_config->param.hysteresis = 5;
 	chip->dynamic_fv_config->prop_name = "BATT_CYCLE_COUNT";
 #else

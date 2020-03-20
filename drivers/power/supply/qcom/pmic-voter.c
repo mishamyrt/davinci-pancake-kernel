@@ -20,7 +20,7 @@
 
 #include <linux/pmic-voter.h>
 
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 #define NUM_MAX_CLIENTS		24
 #else
 #define NUM_MAX_CLIENTS		32
@@ -117,7 +117,7 @@ static void vote_min(struct votable *votable, int client_id,
 			*eff_id = i;
 		}
 	}
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 	if (strcmp(votable->name, "QG_WS") != 0) {
 			if(votable->votes[i].enabled)
 				pr_info("%s: val: %d\n", votable->client_strs[i],
@@ -500,7 +500,7 @@ int vote(struct votable *votable, const char *client_str, bool enabled, int val)
 			|| (effective_result != votable->effective_result)) {
 		votable->effective_client_id = effective_id;
 		votable->effective_result = effective_result;
-#ifdef CONFIG_MACH_XIAOMI_F10
+#ifdef CONFIG_MACH_XIAOMI
 		if (strcmp(votable->name, "QG_WS") != 0) {
 			pr_info("%s: current vote is now %d voted by %s,%d, previous voted %d\n",
 				votable->name, effective_result,
