@@ -73,7 +73,7 @@ get_binutils_version () {
 
 # Create ZIP installer
 pack () {
-    git checkout flasher/banner
+    git cp flasher/banner-template flasher/banner
     echo " " >> flasher/banner
     echo "Branch: $branch" >> flasher/banner
     echo "CLang version: $(get_clang_version)" >> flasher/banner
@@ -81,7 +81,7 @@ pack () {
     cp -f out/arch/arm64/boot/{Image.gz,dtbo.img} flasher/
     cd flasher/
     rm -f pancake.zip
-    zip -r9 ../out/pancake.zip *
+    zip -r9 ../out/pancake.zip -x banner-template *
 }
 
 # Generate build config
