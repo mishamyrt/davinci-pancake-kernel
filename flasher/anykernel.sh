@@ -4,7 +4,7 @@
 ## AnyKernel setup
 # begin properties
 properties() { '
-kernel.string=Milk Kernel by mishamyrt @ myrt.co
+kernel.string=Pancake Kernel by mishamyrt @ myrt.co
 do.devicecheck=1
 do.modules=0
 do.systemless=1
@@ -23,7 +23,6 @@ supported.patchlevels=
 block=/dev/block/bootdevice/by-name/boot;
 is_slot_device=0;
 ramdisk_compression=auto;
-postboot_script=/data/adb/service.d/95-milk.sh
 
 ## AnyKernel methods (DO NOT CHANGE)
 # import patching functions/variables - see for reference

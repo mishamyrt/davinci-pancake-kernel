@@ -80,8 +80,8 @@ pack () {
     echo "Binutils version: $(get_binutils_version)" >> flasher/banner
     cp -f out/arch/arm64/boot/{Image.gz,dtbo.img} flasher/
     cd flasher/
-    rm -f milk.zip
-    zip -r9 ../out/milk.zip *
+    rm -f pancake.zip
+    zip -r9 ../out/pancake.zip *
 }
 
 # Generate build config
@@ -117,7 +117,7 @@ build () {
     echo "Architecture: '$arch'"
     echo "Config: $defconfig"
     echo "Local version: $local_version"
-    sed -i "s/\"-Milk\"/\"-Milk$local_version\"/g" out/.config
+    sed -i "s/\"-Pancake\"/\"-Pancake$local_version\"/g" out/.config
     kmake_flags+=(
         CC="clang"
         CLANG_TRIPLE="aarch64-linux-gnu-"
@@ -148,17 +148,17 @@ publish () {
         echo "Please set \$surge_url environment variable."
         exit 1
     fi
-    cp out/milk.zip release/
-    hash="$(sha1sum out/milk.zip | cut -d' ' -f1)"
+    cp out/pancake.zip release/
+    hash="$(sha1sum out/pancake.zip | cut -d' ' -f1)"
 
     # Export latest 50 commits to changelog
     git log -n 50 --pretty=format:'* %s' > release/changelog.txt
     cat <<- EOF > release/index.html
 {
     "kernel": {
-        "name": "Milk 🥛 nightly",
+        "name": "Pancake 🥞 nightly",
         "sha1": "$hash",
-        "link": "$surge_url/milk.zip",
+        "link": "$surge_url/pancake.zip",
         "version": "$(date '+%Y-%m-%d-%H-%M')",
         "date": "$(date '+%Y-%m-%d')",
         "changelog_url": "$surge_url/changelog.txt"
@@ -189,8 +189,8 @@ telegram_post () {
             ;;
         success)
             local_version="$(get_local_version)"
-            zip_name="out/milk$local_version.zip"
-            old_zip_name="out/milk.zip"
+            zip_name="out/pancake$local_version.zip"
+            old_zip_name="out/pancake.zip"
             if [ "$zip_name" != "$old_zip_name" ]; then
                 cp -f "$old_zip_name" "$zip_name"
             fi
