@@ -9,7 +9,6 @@ llvm_url="$gs_prebuilts/clang/host/linux-x86"
 gcc32_url="$gs_prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9"
 gcc64_url="$gs_prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9"
 libufdt_url="$gs_system/libufdt"
-surge_url="https://milk-kernel.surge.sh"
 
 # Toolchain paths
 gcc32_prefix="$toolchain_path/gcc32/bin/arm-linux-androideabi-"
