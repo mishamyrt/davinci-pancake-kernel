@@ -1,0 +1,87 @@
+name: build
+
+on:
+  push:
+    branches: 
+    - 'ten'
+    - '**/**'
+    tags-ignore:
+      - 'v**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Post build start
+      id: post_start
+      env:
+        telegram_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        telegram_chat_id: "-1001459714859"
+      run: echo "##[set-output name=message_id;]$(./pancake telegram start)"
+
+    - name: Setup environment
+      id: setup 
+      env:
+        toolchain_path: ${{ runner.temp }}/toolchain
+        UBUNTU_DEPS: |
+          lib32z-dev flex lzop bison gperf g++-multilib python-networkx 
+          libc6-dev-i386 libghc-bzlib-dev schedtool 
+          pngcrush liblz4-tool optipng maven libswitch-perl 
+          policycoreutils ccache libxml-sax-base-perl 
+          libxml-simple-perl libgl1-mesa-dev xsltproc 
+          libxml2-utils minicom lib32ncurses5-dev libelf-dev pwgen
+      run: |
+        sudo apt update
+        sudo apt install $UBUNTU_DEPS -y
+        sudo npm install --global surge
+        echo "##[set-output name=toolchain_path;]$toolchain_path"
+    - name: Setup toolchain
+      env:
+        toolchain_path: ${{ steps.setup.outputs.toolchain_path }}
+      run: ./pancake setup
+
+    - name: Configure kernel
+      env:
+        toolchain_path: ${{ steps.setup.outputs.toolchain_path }}
+      run: ./pancake configure
+
+    - name: Build kernel
+      env:
+        toolchain_path: ${{ steps.setup.outputs.toolchain_path }}
+      run: ./pancake build
+
+    - name: Post build failure
+      if: failure()
+      env:
+        telegram_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        telegram_chat_id: "-1001459714859"
+        message_id: ${{ steps.post_start.outputs.message_id }}
+      run: ./pancake telegram fail $message_id
+
+    - name: Pack installer
+      env: 
+        toolchain_path: ${{ steps.setup.outputs.toolchain_path }}
+      run: ./pancake pack
+
+    - name: Publish nightly build
+      env: 
+        toolchain_path: ${{ steps.setup.outputs.toolchain_path }}
+        surge_url: "https://pancake-develop.surge.sh"
+        surge_token:  ${{ secrets.SURGE_TOKEN }}
+      run: ./pancake publish
+
+    - name: Upload installer
+      uses: actions/upload-artifact@v1
+      with:
+        name: pancake
+        path: flasher/
+
+    - name: Post update to Telegram
+      env:
+        telegram_token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        telegram_chat_id: "-1001459714859"
+        message_id: ${{ steps.post_start.outputs.message_id }}
+      run: ./pancake telegram success $message_id
