@@ -33,8 +33,7 @@ kmake_flags=(
 )
 
 check_toolchain () {
-    if [ -z "$toolchain_path" ]
-    then
+    if [ -z "$toolchain_path" ]; then
         echo "Toolchain path is not provided."
         echo "Please set \$toolchain_path environment variable."
         exit 1
@@ -97,8 +96,7 @@ get_local_version () {
     local_version="${local_version/\//-}"
     local_version="${local_version/ten/}"
     local_version="${local_version/-develop/develop}"
-    if (("${#local_version}" > 0))
-    then
+    if (("${#local_version}" > 0)); then
         if [[ ${local_version:0:1} != "-" ]]; then
             local_version="-$local_version"
         fi
@@ -140,14 +138,12 @@ build () {
 publish () {
     rm -rf release/
     git checkout release/.gitignore
-    if [ -z "$surge_token" ]
-    then
+    if [ -z "$surge_token" ]; then
         echo "Surge token is not provided."
         echo "Please set \$surge_token environment variable."
         exit 1
     fi
-    if [ -z "$surge_url" ]
-    then
+    if [ -z "$surge_url" ]; then
         echo "Surge URL is not provided."
         echo "Please set \$surge_url environment variable."
         exit 1
@@ -193,8 +189,6 @@ telegram_post () {
             ;;
         success)
             local_version="$(get_local_version)"
-            echo $local_version
-            exit
             zip_name="out/pancake$local_version.zip"
             old_zip_name="out/pancake.zip"
             if [ "$zip_name" != "$old_zip_name" ]; then
