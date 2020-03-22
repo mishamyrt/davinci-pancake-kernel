@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+bootstrap_path=$(pwd)
+
 # Toolchain URLs
 gs="https://android.googlesource.com/platform"
 gs_prebuilts="$gs/prebuilts"
@@ -49,7 +51,13 @@ kmake () {
 
 # Shallow clone helper
 get_repo () {
-    git clone -j"$threads" --depth=1 "$1" "$2"
+    if [ -d "$2" ]; then
+        cd $2
+        git pull
+        cd $bootstrap_path
+    else
+        git clone -j"$threads" --depth=1 "$1" "$2"
+    fi
 }
 
 # Download toolchain to $toolchain_path
