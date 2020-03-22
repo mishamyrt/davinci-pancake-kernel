@@ -99,8 +99,11 @@ get_local_version () {
     local_version="${local_version/-develop/develop}"
     if (("${#local_version}" > 0))
     then
-        echo "-$local_version"
+        if [[ ${local_version:0:1} != "-" ]]; then
+            local_version="-$local_version"
+        fi
     fi
+    echo $local_version
 }
 
 # Build separated dtbo.img
@@ -190,6 +193,8 @@ telegram_post () {
             ;;
         success)
             local_version="$(get_local_version)"
+            echo $local_version
+            exit
             zip_name="out/pancake$local_version.zip"
             old_zip_name="out/pancake.zip"
             if [ "$zip_name" != "$old_zip_name" ]; then
