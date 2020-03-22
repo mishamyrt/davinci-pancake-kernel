@@ -110,6 +110,8 @@ get_local_version () {
     if [[ ${local_version:0:1} != "-" ]]; then
       local_version="-$local_version"
     fi
+  else
+    echo "🥞"
   fi
   echo $local_version
 }
@@ -131,6 +133,7 @@ print_info () {
   echo "Local version: $local_version"
   echo "CLang version: $(get_clang_version)"
   echo "Binutils version: $(get_binutils_version)"
+  echo "Toolchain path: $toolchain_path"
 }
 
 # Build kernel
