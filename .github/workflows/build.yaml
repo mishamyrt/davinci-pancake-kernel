@@ -34,7 +34,7 @@ jobs:
           libxml-simple-perl libgl1-mesa-dev xsltproc 
           libxml2-utils minicom lib32ncurses5-dev libelf-dev pwgen
 	  run: |
-	    ./scripts/fetch-latest-wireguard.sh
+		sh scripts/fetch-latest-wireguard.sh
 		sudo apt update
         sudo apt install $UBUNTU_DEPS -y
         sudo npm install --global surge
