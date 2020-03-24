@@ -152,10 +152,12 @@ static void set_dload_mode(int on)
 	dload_mode_enabled = on;
 }
 
+#ifdef CONFIG_QCOM_DLOAD_MODE
 static bool get_dload_mode(void)
 {
 	return dload_mode_enabled;
 }
+#endif
 
 static void enable_emergency_dload_mode(void)
 {
@@ -224,10 +226,12 @@ static void enable_emergency_dload_mode(void)
 	pr_err("dload mode is not enabled on target\n");
 }
 
+#ifdef CONFIG_QCOM_DLOAD_MODE
 static bool get_dload_mode(void)
 {
 	return false;
 }
+#endif
 #endif
 
 static void scm_disable_sdi(void)
