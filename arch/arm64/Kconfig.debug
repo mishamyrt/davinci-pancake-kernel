@@ -5,6 +5,10 @@ source "lib/Kconfig.debug"
 config ARM64_PTDUMP_CORE
 	def_bool n
 
+config FRAME_POINTER
+	bool
+	default y
+
 config ARM64_PTDUMP_DEBUGFS
 	bool "Export kernel pagetable layout to userspace via debugfs"
 	depends on DEBUG_KERNEL
