@@ -317,17 +317,17 @@ fail:
 static int
 hdd_enable_disable_apf(struct hdd_adapter *adapter, bool apf_enable)
 {
-	QDF_STATUS status;
+	// QDF_STATUS status;
 
-	status = sme_set_apf_enable_disable(hdd_adapter_get_mac_handle(adapter),
-					    adapter->session_id, apf_enable);
-	if (!QDF_IS_STATUS_SUCCESS(status)) {
-		hdd_err("Unable to post sme apf enable/disable message (status-%d)",
-				status);
-		return -EINVAL;
-	}
+	// status = sme_set_apf_enable_disable(hdd_adapter_get_mac_handle(adapter),
+	// 				    adapter->session_id, apf_enable);
+	// if (!QDF_IS_STATUS_SUCCESS(status)) {
+	// 	hdd_err("Unable to post sme apf enable/disable message (status-%d)",
+	// 			status);
+	// 	return -EINVAL;
+	// }
 
-	adapter->apf_context.apf_enabled = apf_enable;
+	// adapter->apf_context.apf_enabled = apf_enable;
 
 	return 0;
 }
