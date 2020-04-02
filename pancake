@@ -1,0 +1,281 @@
+#!/bin/bash
+set -e
+
+bootstrap_path=$(pwd)
+
+# Toolchain URLs
+gs="https://android.googlesource.com/platform"
+gs_prebuilts="$gs/prebuilts"
+gs_system="$gs/system"
+llvm_url="https://github.com/kdrag0n/proton-clang.git"
+libufdt_url="$gs_system/libufdt"
+
+# Toolchain paths
+llvm_bin="$toolchain_path/llvm/bin"
+gcc32_prefix="$llvm_bin/arm-linux-gnueabi-"
+gcc64_prefix="$llvm_bin/aarch64-linux-gnu-"
+libufdt_bin="$toolchain_path/libufdt/utils/src"
+
+# Build variables
+arch="arm64"
+defconfig="pancake_defconfig"
+threads="$(getconf _NPROCESSORS_ONLN)"
+if (( $threads > 7 )); then
+  threads="7"
+fi
+branch="$(git rev-parse --abbrev-ref HEAD)"
+
+# Default kmake flags
+kmake_flags=(
+	-j"${threads}"
+	ARCH="$arch"
+	O="out"
+)
+
+check_toolchain () {
+  if [ -z "$toolchain_path" ]; then
+    echo "Toolchain path is not provided."
+    echo "Please set \$toolchain_path environment variable."
+    exit 1
+  else
+    mkdir -p "$toolchain_path"
+  fi
+}
+
+# Main wrapper for all `make` functions
+kmake () {
+  make "${kmake_flags[@]}" "$@"
+}
+
+# Shallow clone helper
+get_repo () {
+  if [ -d "$2" ]; then
+    cd $2
+    git pull
+    cd $bootstrap_path
+  else
+    git clone -j"$threads" --depth=1 "$1" "$2"
+  fi
+}
+
+# Download toolchain to $toolchain_path
+setup () {
+  get_repo "$libufdt_url" "$toolchain_path/libufdt"
+  get_repo "$llvm_url"    "$toolchain_path/llvm"
+}
+
+# Parse CLang version
+get_clang_version () {
+  echo $($llvm_bin/clang --version | \
+                   head -n 1 | \
+                   perl -ne 'print $1 if  /clang version (.[\.0-9]+)/gs')
+}
+
+# Parse binutils version
+get_binutils_version () {
+  echo $("$gcc64_prefix"ar --version | perl -ne 'print $1 if  /\(GNU Binutils\) (.[^)]+)/gs')
+}
+
+# Create ZIP installer
+pack () {
+  rm -f flasher/banner
+  cp flasher/banner-template flasher/banner
+  echo " " >> flasher/banner
+  echo "Branch: $branch" >> flasher/banner
+  echo "CLang version: $(get_clang_version)" >> flasher/banner
+  echo "Binutils version: $(get_binutils_version)" >> flasher/banner
+  cp -f out/arch/arm64/boot/{Image.gz,dtbo.img} flasher/
+  cd flasher/
+  rm -f pancake.zip
+  zip -r9 ../out/pancake.zip * -x banner-template
+}
+
+# Generate build config
+configure () {
+  kmake "$defconfig"
+}
+
+
+
+# Format kernel local version
+get_local_version () {
+  local_version="${branch/feature\//}"
+  local_version="${local_version/upstream\//}"
+  local_version="${local_version/\//-}"
+  local_version="${local_version/ten/}"
+  local_version="${local_version/-develop/develop}"
+  if (("${#local_version}" > 0)); then
+    if [[ ${local_version:0:1} != "-" ]]; then
+      local_version="-$local_version"
+    fi
+  fi
+  echo $local_version
+}
+
+get_display_version () {
+  local_version=$(get_local_version)
+  if (("${#local_version}" > 0)); then
+    echo $local_version
+  else
+    echo "🥞"
+  fi
+}
+
+# Format kernel display local version
+
+
+# Build separated dtbo.img
+build_dtbo () {
+  python \
+  "$libufdt_bin/mkdtboimg.py" create \
+  "out/arch/$arch/boot/dtbo.img" \
+  out/arch/$arch/boot/dts/qcom/*.dtbo
+}
+
+print_info () {
+  local_version=$(get_display_version)
+  echo "Branch: $branch"
+  echo "Commit: $(git rev-parse HEAD)"
+  echo "Architecture: $arch"
+  echo "Config: $defconfig"
+  echo "Local version: $local_version"
+  echo "CLang version: $(get_clang_version)"
+  echo "Binutils version: $(get_binutils_version)"
+  echo "Toolchain path: $toolchain_path"
+}
+
+# Build kernel
+build () {
+  echo "Building..."
+  local_version=$(get_display_version)
+  print_info
+  sed -i "s/\"-Pancake\"/\"-Pancake$local_version\"/g" out/.config
+  kmake_flags+=(
+    CC="clang"
+    CLANG_TRIPLE="aarch64-linux-gnu-"
+    CROSS_COMPILE="$gcc64_prefix"
+    CROSS_COMPILE_ARM32="$gcc32_prefix"
+    AR="llvm-ar"
+    NM="llvm-nm"
+    OBJCOPY="llvm-objcopy"
+    OBJDUMP="llvm-objdump"
+    STRIP="llvm-strip"
+  )
+  kmake "$@"
+  build_dtbo
+}
+
+publish () {
+  rm -rf release/
+  git checkout release/.gitignore
+  if [ -z "$surge_token" ]; then
+    echo "Surge token is not provided."
+    echo "Please set \$surge_token environment variable."
+    exit 1
+  fi
+  if [ -z "$surge_url" ]; then
+    echo "Surge URL is not provided."
+    echo "Please set \$surge_url environment variable."
+    exit 1
+  fi
+  cp out/pancake.zip release/
+  hash="$(sha1sum out/pancake.zip | cut -d' ' -f1)"
+
+  # Export latest 50 commits to changelog
+  git log -n 50 --pretty=format:'* %s' > release/changelog.txt
+  cat <<- EOF > release/index.html
+{
+  "kernel": {
+    "name": "Pancake 🥞 nightly",
+    "sha1": "$hash",
+    "link": "$surge_url/pancake.zip",
+    "version": "$(date '+%Y-%m-%d-%H-%M')",
+    "date": "$(date '+%Y-%m-%d')",
+    "changelog_url": "$surge_url/changelog.txt"
+  },
+  "support": {
+    "link": "https://github.com/mishamyrt/davinci-pancake-kernel/issues"
+  }
+}
+EOF
+  surge --project release/ -d "$surge_url" --token "$surge_token"
+}
+
+telegram_post () {
+  telegram_flags=(
+    BRANCH="$branch"
+    TOKEN="$telegram_token"
+    CHAT_ID="$telegram_chat_id"
+    COMMIT="$(git rev-parse HEAD)"
+  )
+  case "$1" in
+    start)
+      export "${telegram_flags[@]}"
+      python3 telegram.py start
+      ;;
+    fail)
+      export "${telegram_flags[@]}"
+      python3 telegram.py fail $2
+      ;;
+    success)
+      local_version="$(get_local_version)"
+      zip_name="out/pancake$local_version.zip"
+      old_zip_name="out/pancake.zip"
+      if [ "$zip_name" != "$old_zip_name" ]; then
+        cp -f "$old_zip_name" "$zip_name"
+      fi
+      telegram_flags+=(
+        FILE_NAME="$zip_name"
+      )
+      export "${telegram_flags[@]}"
+      python3 telegram.py success $2
+      ;;
+  esac
+}
+
+export PATH="$llvm_bin:$PATH"
+export LD_LIBRARY_PATH="$llvm_bin/../lib:$llvm_bin/../lib64:$LD_LIBRARY_PATH"
+
+case "$1" in
+  setup|s)
+    check_toolchain
+    setup
+    ;;
+  information|i)
+    print_info
+    ;;
+  regenerate|r)
+    check_toolchain
+    configure
+    kmake savedefconfig
+    cp -f out/defconfig "arch/$arch/configs/$defconfig"
+    ;;
+  build|b)
+    check_toolchain
+    shift
+    build "$@"
+    ;;
+  configure|c)
+    check_toolchain
+    configure
+    ;;
+  clear|cc)
+    rm -rf out/
+    git checkout out/.gitignore
+    ;;
+  pack|p)
+    pack
+    ;;
+  publish|pb)
+    publish
+    ;;
+  telegram|tg)
+    shift
+    telegram_post "$@"
+    ;;
+  master|m)
+    check_toolchain
+    configure
+    build
+    pack
+esac
