@@ -23,6 +23,7 @@ supported.patchlevels=
 block=/dev/block/bootdevice/by-name/boot;
 is_slot_device=0;
 ramdisk_compression=auto;
+postboot_script=/data/adb/service.d/96-pancake.sh;
 
 ## AnyKernel methods (DO NOT CHANGE)
 # import patching functions/variables - see for reference
@@ -32,6 +33,13 @@ ramdisk_compression=auto;
 # set permissions/ownership for included ramdisk files
 set_perm_recursive 0 0 755 644 $ramdisk/*;
 set_perm_recursive 0 0 750 750 $ramdisk/init* $ramdisk/sbin;
+
+mountpoint -q /data && {
+  # Install second-stage late init script
+  mkdir -p /data/adb/service.d
+  cp ./pancake.sh $postboot_script
+  chmod +x $postboot_script
+} || ui_print 'Data is not mounted; some tweaks will be missing'
 
 ## AnyKernel install
 dump_boot;
