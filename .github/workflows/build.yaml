@@ -44,6 +44,9 @@ jobs:
         toolchain_path: ${{ steps.setup.outputs.toolchain_path }}
       run: ./pancake setup
 
+    - name: Fetch WireGuard
+      run: scripts/fetch-latest-wireguard.sh
+
     - name: Configure kernel
       env:
         toolchain_path: ${{ steps.setup.outputs.toolchain_path }}
