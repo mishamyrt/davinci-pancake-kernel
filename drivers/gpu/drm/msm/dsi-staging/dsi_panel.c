@@ -5238,6 +5238,12 @@ static int panel_disp_param_send_lock(struct dsi_panel *panel, int param)
 		break;
 	case DISPPARAM_HBM_FOD_ON:
 		pr_info("hbm fod on\n");
+#ifdef CONFIG_EXPOSURE_ADJUSTMENT
+		if (ea_panel_is_enabled()) {
+			ea_panel_mode_ctrl(panel, 0);
+			panel->resend_ea = true;
+		}
+#endif
 		if (panel->elvss_dimming_check_enable) {
 			rc = dsi_display_write_panel(panel, &panel->hbm_fod_on);
 		} else {
@@ -5251,6 +5257,12 @@ static int panel_disp_param_send_lock(struct dsi_panel *panel, int param)
 		rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_SET_DISP_HBM_FOD2NORM);
 		break;
 	case DISPPARAM_HBM_FOD_OFF:
+#ifdef CONFIG_EXPOSURE_ADJUSTMENT
+		if (panel->resend_ea) {
+			ea_panel_mode_ctrl(panel, 1);
+			panel->resend_ea = false;
+		}
+#endif
 		pr_info("hbm fod off\n");
 		if (panel->f4_51_ctrl_flag) {
 			cmds = priv_info->cmd_sets[DSI_CMD_SET_DISP_HBM_FOD_OFF].cmds;
