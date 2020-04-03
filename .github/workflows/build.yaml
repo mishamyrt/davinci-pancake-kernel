@@ -45,7 +45,9 @@ jobs:
       run: ./pancake setup
 
     - name: Fetch WireGuard
-      run: scripts/fetch-latest-wireguard.sh
+      run: |
+        scripts/fetch-latest-wireguard.sh
+        git checkout net/wireguard/compat/compat.h
 
     - name: Configure kernel
       env:
