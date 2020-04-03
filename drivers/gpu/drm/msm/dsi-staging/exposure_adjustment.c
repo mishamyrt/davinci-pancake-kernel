@@ -91,7 +91,7 @@ static int ea_panel_send_pcc(u32 bl_lvl)
 	struct dsi_display *display = NULL;
 	u32 ea_coeff, r_data, g_data, b_data;
 
-	display = get_main_display();
+	display = get_primary_display();
 	if (!display) {
 		pr_err("ERROR: Cannot find display of this panel\n");
 		return -ENODEV;
