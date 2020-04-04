@@ -24,6 +24,7 @@ if (( $threads > 7 )); then
   threads="7"
 fi
 branch="$(git rev-parse --abbrev-ref HEAD)"
+out_zip="out/pancake.zip"
 
 # Default kmake flags
 kmake_flags=(
@@ -87,7 +88,7 @@ pack () {
   cp -f out/arch/arm64/boot/{Image.gz,dtbo.img} flasher/
   cd flasher/
   rm -f pancake.zip
-  zip -r9 ../out/pancake.zip * -x banner-template
+  zip -r9 ../$out_zip * -x banner-template
 }
 
 # Generate build config
@@ -95,7 +96,24 @@ configure () {
   kmake "$defconfig"
 }
 
+get_line () {
+  echo "$1" | head -n $2 | tail -n 1
+}
 
+print_build_info () {
+  if test -f "$out_zip"; then
+    banner_content=$(unzip -c out/pancake.zip banner)
+    branch=$(get_line "$banner_content" 12 | cut -d' ' -f2)
+    clang_version=$(get_line "$banner_content" 13 | cut -d' ' -f3)
+    gcc_version=$(get_line "$banner_content" 14 | cut -d' ' -f3)
+    echo "File path: $out_zip"
+    echo "Branch: $branch"
+    echo "CLang version: $clang_version"
+    echo "Binutils version: $gcc_version"
+  else
+    echo "There is no build."
+  fi
+}
 
 # Format kernel local version
 get_local_version () {
@@ -167,8 +185,8 @@ publish () {
     echo "Please set \$surge_url environment variable."
     exit 1
   fi
-  cp out/pancake.zip release/
-  hash="$(sha1sum out/pancake.zip | cut -d' ' -f1)"
+  cp $out_zip release/
+  hash="$(sha1sum $out_zip | cut -d' ' -f1)"
 
   # Export latest 50 commits to changelog
   git log -n 50 --pretty=format:'* %s' > release/changelog.txt
@@ -209,7 +227,7 @@ telegram_post () {
     success)
       local_version="$(get_local_version)"
       zip_name="out/pancake$local_version.zip"
-      old_zip_name="out/pancake.zip"
+      old_zip_name="$out_zip"
       if [ "$zip_name" != "$old_zip_name" ]; then
         cp -f "$old_zip_name" "$zip_name"
       fi
@@ -257,6 +275,9 @@ case "$1" in
     ;;
   publish|pb)
     publish
+    ;;
+  build-information|bi)
+    print_build_info
     ;;
   telegram|tg)
     shift
