@@ -189,7 +189,7 @@ publish () {
     "name": "Pancake 🥞 nightly",
     "sha1": "$hash",
     "link": "$surge_url/pancake.zip",
-    "version": "$(date '+%Y-%m-%d-%H-%M')",
+    "version": "$(date '+%Y-%m-%d-%H-%M')$(get_local_version)",
     "date": "$(date '+%Y-%m-%d')",
     "changelog_url": "$surge_url/changelog.txt"
   },
