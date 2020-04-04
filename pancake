@@ -112,6 +112,7 @@ get_local_version () {
   echo $local_version
 }
 
+# Format kernel display local version
 get_display_version () {
   local_version=$(get_local_version)
   if (("${#local_version}" > 0)); then
@@ -119,17 +120,6 @@ get_display_version () {
   else
     echo "🥞"
   fi
-}
-
-# Format kernel display local version
-
-
-# Build separated dtbo.img
-build_dtbo () {
-  python \
-  "$libufdt_bin/mkdtboimg.py" create \
-  "out/arch/$arch/boot/dtbo.img" \
-  out/arch/$arch/boot/dts/qcom/*.dtbo
 }
 
 print_info () {
@@ -162,7 +152,6 @@ build () {
     STRIP="llvm-strip"
   )
   kmake "$@"
-  build_dtbo
 }
 
 publish () {
