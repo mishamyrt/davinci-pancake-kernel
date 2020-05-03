@@ -250,6 +250,39 @@ config CPU_FREQ_GOV_INTERACTIVE
 
 	  If in doubt, say N.
 
+config CPU_FREQ_LIMITER
+	bool "CPU Freq Limiter"
+	help
+      Driver allows easy separate tuning of processor frequencies for
+      idle and active states.
+
+if CPU_FREQ_LIMITER
+
+config FREQ_LIMIT_MAX_LP
+	int "Silver cluster max frequency"
+	default "0"
+	help
+	  Max frequency for the low-power CPU cluster.
+
+config FREQ_LIMIT_MAX_PERF
+	int "Gold cluster max frequency"
+	default "0"
+	help
+	  Max-boost frequency for the performance CPU cluster.
+
+config FREQ_LIMIT_MIN_LP
+	int "Silver cluster min frequency to set while screen is on"
+	default "0"
+	help
+	  Min freq to set for lp cluster when screen is on.
+
+config FREQ_LIMIT_MIN_PERF
+	int "Gold cluster min frequency to set while screen is on"
+	default "0"
+	help
+	  Min freq to set for perf cluster when screen is on.
+endif
+
 comment "CPU frequency scaling drivers"
 
 config CPUFREQ_DT
