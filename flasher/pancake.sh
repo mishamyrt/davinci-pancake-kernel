@@ -38,7 +38,3 @@ done
 find /sys/block/sd* | while read node; do
   echo 128 > "$node/queue/read_ahead_kb"
 done
-
-# Reduce big cluster maximum frequency
-chmod 644 /sys/devices/system/cpu/cpu6/cpufreq/scaling_max_freq
-echo 2169600 > /sys/devices/system/cpu/cpu6/cpufreq/scaling_max_freq
