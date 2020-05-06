@@ -6,6 +6,15 @@ bootstrap_path=$(pwd)
 # Toolchain URL
 llvm_url="https://github.com/kdrag0n/proton-clang.git"
 
+# Upstream repos
+als_url="https://github.com/android-linux-stable/msm-4.14"
+als_branch="kernel.lnx.4.14.r4-rel"
+caf_vendor_url="https://source.codeaurora.org/quic/la/platform/vendor"
+audio_kernel_url="$caf_vendor_url/opensource/audio-kernel"
+qcacld_url="$caf_vendor_url/qcom-opensource/wlan/qcacld-3.0"
+qca_wifi_url="$caf_vendor_url/qcom-opensource/wlan/qca-wifi-host-cmn"
+fw_api_url="$caf_vendor_url/qcom-opensource/wlan/fw-api"
+
 # Paths
 llvm_bin="$toolchain_path/llvm/bin"
 gcc32_prefix="$llvm_bin/arm-linux-gnueabi-"
@@ -239,6 +248,20 @@ telegram_post () {
   esac
 }
 
+upstream () {
+  case "$1" in
+    linux)
+      git pull $als_url $als_branch
+      ;;
+    caf-sub)
+      git subtree pull --prefix drivers/staging/qca-wifi-host-cmn $qca_wifi_url "$2"
+      git subtree pull --prefix drivers/staging/qcacld-3.0 $qcacld_url "$2"
+      git subtree pull --prefix drivers/staging/fw-api $fw_api_url "$2"
+      git subtree pull --prefix techpack/audio/ $audio_kernel_url "$2"
+      ;;
+  esac
+}
+
 export PATH="$llvm_bin:$PATH"
 export LD_LIBRARY_PATH="$llvm_bin/../lib:$llvm_bin/../lib64:$LD_LIBRARY_PATH"
 
@@ -287,4 +310,8 @@ case "$1" in
     configure
     build
     pack
+  ;;
+  upstream|u)
+    shift
+    upstream "$@"
 esac
