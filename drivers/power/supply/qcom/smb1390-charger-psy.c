@@ -673,7 +673,6 @@ unlock:
 
 	if (rc >= 0)
 		val->intval = smb1390_get_isns(temp);
-	pr_err("smb1390 isns value, isns = %d\n", val->intval);
 
 	return rc;
 }
