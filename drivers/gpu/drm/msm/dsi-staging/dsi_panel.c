@@ -71,6 +71,7 @@
 #define DEFAULT_PANEL_PREFILL_LINES	25
 #define TICKS_IN_MICRO_SECOND		1000000
 
+static bool force_dcip3 = false;
 static struct dsi_panel *g_panel;
 static int panel_disp_param_send_lock(struct dsi_panel *panel, int param);
 int dsi_display_read_panel(struct dsi_panel *panel, struct dsi_read_config *read_config);
@@ -875,6 +876,12 @@ int dsi_panel_enable_doze_backlight(struct dsi_panel *panel, u32 bl_lvl)
 	panel->last_bl_lvl = bl_lvl;
 
 	return rc;
+}
+
+int dsi_panel_set_gammut_range(struct dsi_panel *panel, bool wide) {
+	if (likely(wide))
+		return dsi_panel_tx_cmd_set(panel, DSI_CMD_SET_DISP_CRC_DCIP3);
+	return dsi_panel_tx_cmd_set(panel, DSI_CMD_SET_DISP_SRGB);
 }
 
 int dsi_panel_set_backlight(struct dsi_panel *panel, u32 bl_lvl)
@@ -3962,8 +3969,9 @@ void dsi_panel_put(struct dsi_panel *panel)
 	kfree(panel);
 }
 
-#ifdef CONFIG_EXPOSURE_ADJUSTMENT
 static struct dsi_panel * set_panel;
+
+#ifdef CONFIG_EXPOSURE_ADJUSTMENT
 static ssize_t dsi_panel_set_ea_enable(struct device *dev,
 	struct device_attribute *attr, const char *buf, size_t len)
 {
@@ -3992,16 +4000,49 @@ static ssize_t dsi_panel_get_ea_enable(struct device *dev,
 
 static DEVICE_ATTR(ea_enable, S_IRUGO | S_IWUSR,
 	dsi_panel_get_ea_enable, dsi_panel_set_ea_enable);
+#endif
+
+static ssize_t dsi_panel_set_force_p3(struct device *dev,
+	struct device_attribute *attr, const char *buf, size_t len)
+{
+	u32 force_p3;
+
+	if (sscanf(buf, "%d", &force_p3) != 1) {
+		pr_err("sccanf buf error!\n");
+		return len;
+	}
+
+	force_dcip3 = force_p3 != 0;
+
+	dsi_panel_set_gammut_range(set_panel, force_dcip3);
+
+	return len;
+}
+
+static ssize_t dsi_panel_get_force_p3(struct device *dev,
+		struct device_attribute *attr, char *buf)
+{
+	int ret;
+
+	ret = scnprintf(buf, PAGE_SIZE, "%d\n", force_dcip3 ? 1 : 0);
+
+	return ret;
+}
+
+static DEVICE_ATTR(force_p3, S_IRUGO | S_IWUSR,
+	dsi_panel_get_force_p3, dsi_panel_set_force_p3);
 
 static struct attribute *mdss_fb_attrs[] = {
+#ifdef CONFIG_EXPOSURE_ADJUSTMENT
 	&dev_attr_ea_enable.attr,
+#endif
+	&dev_attr_force_p3.attr,
 	NULL,
 };
 
 static struct attribute_group mdss_fb_attr_group = {
 	.attrs = mdss_fb_attrs,
 };
-#endif
 
 #if DSI_READ_WRITE_PANEL_DEBUG
 static int dsi_display_write_panel(struct dsi_panel *panel,
@@ -5679,6 +5720,9 @@ static int panel_disp_param_send_lock(struct dsi_panel *panel, int param)
 		break;
 	}
 
+	if (force_dcip3)
+		dsi_panel_set_gammut_range(panel, true);
+
 	mutex_unlock(&panel->panel_lock);
 	return rc;
 }
@@ -5852,6 +5896,7 @@ int dsi_panel_post_enable(struct dsi_panel *panel)
 		       panel->name, rc);
 		goto error;
 	}
+
 error:
 	mutex_unlock(&panel->panel_lock);
 	return rc;
