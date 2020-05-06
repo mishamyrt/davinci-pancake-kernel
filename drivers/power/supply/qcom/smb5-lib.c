@@ -4328,8 +4328,8 @@ restore_adc_config:
 	 /* Restore ADC channel config */
 	if (chg->wa_flags & USBIN_ADC_WA)
 		rc = smblib_write(chg, BATIF_ADC_CHANNEL_EN_REG, reg);
-		if (rc < 0)
-			smblib_err(chg, "Couldn't write ADC config rc=%d\n",
+	if (rc < 0)
+		smblib_err(chg, "Couldn't write ADC config rc=%d\n",
 						rc);
 
 unlock:
@@ -6809,7 +6809,7 @@ static void smblib_handle_hvdcp_3p0_auth_done(struct smb_charger *chg,
 
 		vote(chg->usb_icl_votable, SW_ICL_MAX_VOTER, true,
 				HVDCP2_CURRENT_UA);
-	
+
 		/* QC3.5 detection timeout */
 		if (!chg->apsd_ext_timeout &&
 				!timer_pending(&chg->apsd_timer)) {
