@@ -71,7 +71,7 @@
 #define DEFAULT_PANEL_PREFILL_LINES	25
 #define TICKS_IN_MICRO_SECOND		1000000
 
-static bool force_dcip3 = false;
+static bool force_dcip3 = true;
 static struct dsi_panel *g_panel;
 static int panel_disp_param_send_lock(struct dsi_panel *panel, int param);
 int dsi_display_read_panel(struct dsi_panel *panel, struct dsi_read_config *read_config);
