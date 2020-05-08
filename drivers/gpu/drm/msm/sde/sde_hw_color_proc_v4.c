@@ -14,22 +14,15 @@
 #include <drm/msm_drm_pp.h>
 #include "sde_hw_color_proc_common_v4.h"
 #include "sde_hw_color_proc_v4.h"
-
-#ifdef CONFIG_KLAPSE
 #include <linux/klapse.h>
 
-unsigned short kcal_red = 255;
-unsigned short kcal_green = 242;
-unsigned short kcal_blue = 241;
-#else
-static unsigned short kcal_red = 255;
-static unsigned short kcal_green = 242;
-static unsigned short kcal_blue = 241;
-#endif
+unsigned short kcal_red = 256;
+unsigned short kcal_green = 256;
+unsigned short kcal_blue = 256;
 static unsigned short kcal_hue = 0;
 static unsigned short kcal_sat = 256;
-static unsigned short kcal_val = 260;
-static unsigned short kcal_cont = 255;
+static unsigned short kcal_val = 256;
+static unsigned short kcal_cont = 256;
 
 module_param(kcal_red, short, 0644);
 module_param(kcal_green, short, 0644);
