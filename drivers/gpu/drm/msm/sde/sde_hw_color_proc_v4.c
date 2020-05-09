@@ -296,10 +296,10 @@ void sde_setup_dspp_pccv4(struct sde_hw_dspp *ctx, void *cfg)
 			i == 0 ? (coeffs->r * kcal_red) / 256 : coeffs->r);
 		// GREEN
 		SDE_REG_WRITE(&ctx->hw, base + PCC_G_OFF,
-			i == 1 ? (coeffs->g * kcal_green) / 256 : coeffs->g);
+			i == 1 ? (coeffs->g * (kcal_green - 13)) / 256 : coeffs->g);
 		// BLUE
 		SDE_REG_WRITE(&ctx->hw, base + PCC_B_OFF,
-			i == 2 ? (coeffs->b * kcal_blue) / 256 : coeffs->b);
+			i == 2 ? (coeffs->b * (kcal_blue - 14)) / 256 : coeffs->b);
 
 		SDE_REG_WRITE(&ctx->hw, base + PCC_RG_OFF, coeffs->rg);
 		SDE_REG_WRITE(&ctx->hw, base + PCC_RB_OFF, coeffs->rb);
@@ -321,7 +321,7 @@ void sde_setup_dspp_pccv4(struct sde_hw_dspp *ctx, void *cfg)
 
 	// VALUE
 	SDE_REG_WRITE(&ctx->hw, ctx->cap->sblk->hsic.base + PA_VAL_OFF,
-		kcal_val & PA_VAL_MASK);
+		(kcal_val - 2) & PA_VAL_MASK);
 	local_opcode |= PA_VAL_EN;
 
 	// CONTRAST
