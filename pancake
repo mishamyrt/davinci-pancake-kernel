@@ -330,7 +330,8 @@ case "$1" in
   upstream|u)
     shift
     upstream "$@"
+    ;;
   add_sub|a)
     shift
-    upstream "$@"
+    add_sub "$@"
 esac
